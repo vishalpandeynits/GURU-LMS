@@ -1,0 +1,116 @@
+{% extends 'base.html' %} 
+{% load static %}
+{% load filters %}
+{% load account %}
+{% load socialaccount %}
+{% load notifications_tags %} 
+{% block content %}
+<div class="row">
+    <div class="col-2">
+        <div id="mySidenav" class="sidenav">
+            <button class="closebtn" onclick="closeNav()">
+				&times;
+			</button >
+			<a href="{% url 'homepage' %}" onclick="closeNav()">
+				<i class="fas fa-home mr-2"></i> Home
+			</a>
+			<a  onclick="closeNav()"
+				href="{% url 'resources' classroom.unique_id subject.id  %}" >
+				<i class="fas fa-book-open mr-2"></i> Resources
+			</a>
+			<a onclick="closeNav()"
+				href="{% url 'assignments' classroom.unique_id subject.id  %}" >
+				<i class="fas fa-briefcase mr-2"></i> Assignments
+			</a>
+			<a onclick="closeNav()"
+				href="{% url 'announcement' classroom.unique_id subject.id %}">
+				<i class="fas fa-bullhorn mr-2"></i> Announcements
+			</a>
+			<a style="border-bottom:5px solid black;" 
+			   href="{% url 'subject_details' classroom.unique_id subject.id %}"
+			   onclick="closeNav()"> 
+			   <i class="fas fa-chalkboard-teacher mr-2"></i> 
+			   {{ subject.subject_name }}
+			</a>
+			{% if classes %}
+			<h4 style="text-align:center;font-weight: bolder;"> 
+				Switch classroom 
+			</h4>
+			{% for class in classes %}
+				<a class="text-wrap1"href="{% url 'subjects' class.unique_id %}" onclick="closeNav()">
+				  <i class="fas fa-chalkboard-teacher mr-2"></i> {{ class.class_name }}
+				</a>
+			{% endfor %}
+		{% endif %}
+		</div>
+	</div>
+</div>
+
+<div class="horizontal-bar">
+    <div>
+        <span id="openNav" onclick="openNav()">
+            &#9776;
+        </span>
+        {% if classroom %}
+            <span class="class-name"> {{ classroom.class_name|slice:"0:20" }}</span>
+        {% endif %}
+    </div>
+    <div class="second-box">  
+        {% if user.is_authenticated %}
+        <nav>
+            <div class="icon" id="bell">
+                <button class="notification-icon">
+                    <span><i class="fas fa-2x fa-bell"></i> </span>
+                    <span id="notif-count" class="badge">{% live_notify_badge %}</span>
+                </button>
+            </div>
+            <div class="notifications" id="box">
+                <a href="{% url 'readall-notif' %}">Mark all as read.</a>
+                <div id="notification-container"> </div>
+                <div class="notification-container">
+                    {% for msg in read %}
+                    <a href="{{ msg.data.url }}">
+                        <div class="notifications-item"> 
+                                <div class="text">
+                                    <h4> {{msg.verb}} </h4> by
+                                    <span>{{msg.actor}}</span> on {{ msg.timestamp }}
+                                </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% register_notify_callbacks callbacks='fill_notification_badge,my_special_notification_callback' %}
+            </div>
+        </nav>
+        {% get_social_accounts user as accounts %}
+        <div class="user-icon"  onclick="on_nav(_('dropdown-container'))" >
+            <img id="icon" height="50" width="50"
+            {% if accounts %} 
+                {% if p_user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                    src="{{ user.profile.profile_pic.url }}"
+                {% else %}
+                    src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
+                {% endif %}
+            {% else %}
+                src="{{ user.profile.profile_pic.url }}"
+            {% endif %}
+            >
+        </div>
+        <div id="dropdown-container" style="flex-direction: column;"class="bg-dark float-right text-dark">
+            <a class="text-light d-block" href="{% url 'profile' user.username %}">
+                Profile
+            </a>
+            <a class="text-light d-block" href="{% url 'logout' %}">
+                Log Out
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<br><br><br>
+<div id="main">
+	{% block subject_content %} {% endblock %}
+</div>
+</div>
+{% endblock %}

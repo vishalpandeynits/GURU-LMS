@@ -1,0 +1,8 @@
+.env
+media/
+staticfiles/
+__pycache__/
+gur/
+.catalyst/
+.vscode/
+.idea/

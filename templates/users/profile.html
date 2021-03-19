@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block title %} {{ p_user.first_name|upper}} {% endblock %}
+{% load filters %}
+{% load static %}
+{% load account %}
+{% load humanize %}
+{% block css %}
+<link href="{% static 'css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+{% include 'snippets/navigation.html' %}
+
+<div>
+    <div class="container">
+        {% if user == p_user %}
+        <div class="profile-header">
+          <div class="profile-img">
+            <img width="200" alt="Profile Image"
+            {% if accounts %} 
+                {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                    src="{{ user.profile.profile_pic.url }}"
+                {% else %}
+                    src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
+                {% endif %}
+            {% else %}
+                src="{{ user.profile.profile_pic.url }}"
+            {% endif %}>
+          </div>
+
+          <div class="profile-nav-info">
+            <h3 class="user-name">{{ user.first_name}} {{user.last_name}}</h3>
+            <div class="address">
+              <p id="state" class="state">{{user.username}}</p>
+              <p id="state" class="state">Joined on {{user.date_joined|date }} </p>
+            </div>
+          </div>
+        </div>
+      
+        <div class="main-bd" >
+          <div class="left-side" >
+            <div class="profile-side" style="height:100%;">
+              {% if user.profile.phone_number %}
+              <p class="mobile-no"><i class="fa fa-2x mb-2 fa-phone"></i> {{user.profile.phone_number }}</p>
+              {% endif %}
+              {% if user.email %}
+              <p class="user-mail" style="font-size:1.3em;"><i class="fa fa-2x mb-2 fa-envelope"></i> {{user.email }}</p>
+              {% endif %}
+              {% if user.profile.whatsapp_number %}
+              <p class="mobile-no"><i class="fab fa-2x fa-whatsapp"></i></i> {{user.profile.whatsapp_number }}</p>
+              {% endif %}
+              {% if user.profile.bio %}
+              <div class="user-bio">
+                <h3>Bio</h3>
+                <p class="bio">
+                    {{user.profile.bio }}
+                </p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="right-side">
+            <div class="nav">
+              <ul>
+                <li onclick="tabs(0)" class="user-post active">Classrooms </li>
+                <li onclick="tabs(1)" class="user-review">Update Profile</li>
+                <li onclick="tabs(2)" class="user-setting"> Pending requests </li>
+              </ul>
+            </div>
+
+            <div class="profile-body">
+              <div class="profile-posts tab">
+                <h1 style="border-bottom:4px solid grey;">Classrooms</h1>
+                {% if classes %}
+                <table class="table table-striped table hover table-bordered">
+                  <thead class="thead-dark">
+                    <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Class</th>
+                    <th scope="col">Created By</th>
+                    <th scope="col">Subjects</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for class in classes %}
+                      <tr>
+                        <th scope="row">{{forloop.counter}}</th>
+                        <td>
+                          <a href="{% url 'subjects' class.unique_id %}">{{class.class_name|upper}}</a>
+
+                        </td>
+                        <td>{{class.created_by}}</td>
+                        <td>{{class.subject_set.count }}</td>
+                        </th>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% else %}
+                <h1 class="heading2">You are not enrolled in any class yet.</h1>
+                {% endif %}
+              </div> 
+
+              <div class="profile-reviews tab">
+                <h1 class="text-center">Update Profile</h1>
+                <form method="POST" onsubmit="return validateprofile();" enctype="multipart/form-data">{% csrf_token %}
+                  <p id="profile-errors"></p>
+                  <div id="profile-edit">
+                    {% for field in p_form %}
+                      {% if field.field.widget.input_type == 'file' %}
+                      <input type="file" name="file" id="actual-btn" hidden/>
+                      <label id="file-upload-label" class="text-center"for="actual-btn">                       
+                        {% if user.profile.profile_pic %}
+                          {% if not accounts %}
+                            {{ user.profile.profile_pic|filebasename }}.
+                          {% endif %}
+                          Click to change
+                        {% endif %}
+                        Upload Profile pic<i class="fa mx-2 fa-upload" aria-hidden="true"></i></label>
+                      {% else %}
+                        {{ field.label_tag }}<br>
+                        {{ field }}
+                      {% endif %}
+                    {% endfor %}<br>
+                    <input type="submit" class="btn btn-primary float-right"value="Update Profile">
+                  </div>
+                </form>
+              </div>
+
+              <div class="profile-settings tab">
+                <div class="account-setting">
+                  <h1>Your pending requests ({{ pending_requests|length }})</h1>
+                  {% for classroom in pending_requests %}
+                  <div class="alert bg-light border-dark mx-auto">
+                    {{ classroom.class_name }} 
+                    <a class="float-right text-primary" href="{% url 'unsend_request' classroom.unique_id %}">Cancel request</a>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+           </div>
+        </div>
+    </div>
+    {% else %}
+    <div id="profile" class="container">
+      <div class="row">
+        <div id="info" class="mx-auto">
+          {% get_social_accounts p_user as accounts %}
+          <img style="width:100%;height:300px;" alt="Profile Image"
+          {% if accounts %} 
+              {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                  src="{{ p_user.profile.profile_pic.url }}"
+              {% else %}
+                  src="{{ p_user.socialaccount_set.all.0.get_avatar_url }}"
+              {% endif %}
+          {% else %}
+              src="{{ p_user.profile.profile_pic.url }}"
+          {% endif %}><br><br><br>
+          
+  
+          <h3 class="text-center">{{ profile.user.username }}</h3>
+          <h4 class="text-center"> {{p_user.first_name }} {{p_user.last_name }}</h4>
+          <pre class="text-center">{{ profile.bio }}</pre>
+          
+          <div id="social-container"  style="display:flex; justify-content: center;">
+            <a style="background:#EA4335;color:white;"href="mailto:{{profile.user.email}}" target="_blank" 
+              class="btn-floating btn-lg btn-gplus">
+              <i class="fas fa-envelope"></i>
+            </a>
+            {% if profile.whatsapp_number != None %}
+              <a target="_blank" style="background:#1eae9d;color:white;"class="btn-floating btn-lg btn-whatsapp" 
+                href="https://api.whatsapp.com/send?phone={{ profile.whatsapp_number}}">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+            {% endif %}
+  
+            {% if profile.phone_number  != None %}
+              <a style="color:white;"target="_blank" href="tel:{{profile.phone_number }}" 
+                class="btn-floating btn-lg">
+                <i style="transform: rotate(270deg)"class="fa fa-phone" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+$(".nav ul li").click(function() {
+  $(this)
+    .addClass("active")
+    .siblings()
+    .removeClass("active");
+});
+
+const tabBtn = document.querySelectorAll(".nav ul li");
+const tab = document.querySelectorAll(".tab");
+
+function tabs(panelIndex) {
+  tab.forEach(function(node) {
+    node.style.display = "none";
+  });
+  tab[panelIndex].style.display = "block";
+}
+tabs(0);
+</script>
+{% endblock %}
