@@ -1,20 +1,21 @@
 {% extends 'snippets/subject_page.html' %}
 {% block title %} {{ subject.subject_name|upper }} {% endblock %}
 {% load static %}
+{% load humanize %}
+
 {% block css %}
+<style>
+	#overlayform .subject_description{
+		height:200px !important;
+	}
+	#activity *{
+		color:black !important;
+	}
+	</style>
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 {% endblock %}
-{% load humanize %}
-{% block subject_content %}
-<style>
-#overlayform .subject_description{
-	height:200px !important;
-}
-#activity *{
-	color:black !important;
-}
-</style>
 
+{% block subject_content %}
 <div class="container">
 	<div class="subject-intro">
 		<div id="subject-name">Subject: {{ subject.subject_name }}</div>
@@ -72,7 +73,7 @@
 	</div>
 	{% endif %}
 
-	<div style="display:block;" id="members" class="m-auto">
+	<div style="display:none;" id="members" class="m-auto">
 		<h1 class="text-center"> Members </h1>
 
 	{% for member in members %}
@@ -123,7 +124,7 @@
 	<!-- Members list end -->
 
 	{% if page %}
-	<div id="activitya" class="m-auto" style="display:none;">
+	<div style="display:block;" id="activitya" class="m-auto">
 		<h1 class="text-center"> Activities </h1>
 		<span style="min-height:600px;">
 			{% for activity in page %}

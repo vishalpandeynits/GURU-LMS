@@ -589,7 +589,7 @@ def remove_member(request,unique_id,username):
         classroom.members.remove(remove_this_user)
         classroom.teacher.remove(remove_this_user)
         classroom.special_permissions.remove(remove_this_user)
-        verb = f"You are removed from {classroom.class_name}"
+        verb = f"You are removed/left from {classroom.class_name}"
         notify.send(sender=request.user,verb=verb,recipient=remove_this_user,url='#')
         if request.user==remove_this_user:
             return redirect(reverse('homepage'))

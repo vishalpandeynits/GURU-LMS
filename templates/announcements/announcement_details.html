@@ -4,15 +4,16 @@
 {% load filters %}
 {% load humanize %}
 {% load static %}
+
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/detailpage.css' %}">
 {% include 'django_quill/media.html' %}
 {% endblock %}
+
 {% block subject_content %}
 <div style="padding:3px;" class="container">
    <div class="row ">
 	<div class="col">
-		
 		<div id="contain">
 			{% if is_teacher %}
 			<button class="btn btn-danger m-2 float-right" 

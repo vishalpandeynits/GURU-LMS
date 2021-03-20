@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
-{% load socialaccount %}
-{% block title %} {{ p_user.first_name|upper}} {% endblock %}
+
 {% load filters %}
 {% load static %}
 {% load account %}
 {% load humanize %}
+{% load socialaccount %}
+
+{% block title %} {{ profile.user.first_name|upper}} {% endblock %}
+
 {% block css %}
 <link href="{% static 'css/profile.css' %}" rel="stylesheet">
 {% endblock %}
+
 {% block content %}
 {% include 'snippets/navigation.html' %}
-
 <div>
     <div class="container">
         {% if user == p_user %}
@@ -42,13 +45,13 @@
           <div class="left-side" >
             <div class="profile-side" style="height:100%;">
               {% if user.profile.phone_number %}
-              <p class="mobile-no"><i class="fa fa-2x mb-2 fa-phone"></i> {{user.profile.phone_number }}</p>
+              <p class="mobile-no"><i class="fa fa-2x mb-2 fa-phone"></i> <br>{{user.profile.phone_number }}</p>
               {% endif %}
               {% if user.email %}
-              <p class="user-mail" style="font-size:1.3em;"><i class="fa fa-2x mb-2 fa-envelope"></i> {{user.email }}</p>
+              <p class="user-mail" style="font-size:1.3em;"><i class="fa fa-2x mb-2 fa-envelope"></i> <br>{{user.email }}</p>
               {% endif %}
               {% if user.profile.whatsapp_number %}
-              <p class="mobile-no"><i class="fab fa-2x fa-whatsapp"></i></i> {{user.profile.whatsapp_number }}</p>
+              <p class="mobile-no"><i class="fab fa-2x fa-whatsapp"></i></i><br> {{user.profile.whatsapp_number }}</p>
               {% endif %}
               {% if user.profile.bio %}
               <div class="user-bio">
@@ -190,6 +193,7 @@
 </div>
 </div>
 {% endblock %}
+
 {% block javascript %}
 <script>
 $(".nav ul li").click(function() {

@@ -1,14 +1,13 @@
 {% extends 'snippets/subject_page.html' %} 
 {% block title %} DETAILS {% endblock %}
-{% block subject_content %} 
+{% load comments %}
 {% load filters %}
 {% load humanize %} 
 {% load static %}
+
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/detailpage.css' %}">
 {% include 'django_quill/media.html' %}
-{% endblock %}
-{% load comments %}
 <style>
     .buttons {
         border: none;
@@ -16,6 +15,9 @@
         padding: 7px;
     }
 </style>
+{% endblock %}
+
+{% block subject_content %} 
 <div style="padding:3px;"class="container">
         <div class="row d-flex justify-content-end ">
             {% if is_teacher %}
