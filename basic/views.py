@@ -257,7 +257,7 @@ def note_details(request, unique_id, subject_id, id, form = None):
 def note_delete(request,unique_id,subject_id,id):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
     subject = get_object_or_404(Subject,id=subject_id)
-    note =  get_object_or_404(Note,id=subject_id)
+    note =  get_object_or_404(Note,id=id)
     admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
     is_teacher = admin_check or note.uploaded_by==request.user or request.user==subject.teacher 
     if is_teacher:
@@ -371,6 +371,7 @@ def assignment_handle(request,unique_id,subject_id,id):
             submission.marks_assigned = marks
             submission.save()
             url = reverse('assignment_page',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id,'id':assignment.id})
+            messages.add_message(request,messages.SUCCESS,'Marks Assigned.')
             notify.send(sender=request.user,verb=f'You got {marks} for your assignment {assignment.topic}',recipient=submission.submitted_by,url =url)
             email_marks(request,submission,assignment)
             return redirect(reverse('assignment-handle',kwargs={
@@ -385,7 +386,7 @@ def assignment_handle(request,unique_id,subject_id,id):
         ontime_submissions = all_submissions.filter(submitted_on__lte=assignment.submission_date)
         members = classroom.members.all()
         teachers = classroom.teacher.all()
-        students = members.difference(teachers)
+        students = members.difference(teachers).difference(classroom.special_permissions.all())
         submitted = assignment.submitted_by.all()
         not_submitted = students.difference(submitted)
         
@@ -426,7 +427,7 @@ def assignment_delete(request,unique_id,subject_id,id):
     if is_teacher:
         assignment.delete()
         assignment_delete_notify(request,assignment)
-        return redirect(reverse('assignment_page',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
+        return redirect(reverse('assignments',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
     else:
         raise Http404()
 
@@ -694,3 +695,7 @@ def features(request):
 
 def privacy(request):
     return render(request, 'privacy.html')
+
+@login_required
+def bug_report(request):
+    pass

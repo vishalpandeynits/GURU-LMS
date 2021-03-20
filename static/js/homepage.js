@@ -110,7 +110,7 @@ deleteConfirm(entity,myRandomSuccessCallBackFunction)
 //local success callback after delete function
 function myRandomSuccessCallBackFunction(){
     url =_('userDeleteButton').value
-    window.location.href = window.location.protocol+window.location.href+url
+    window.location.assign(location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '')+url)
 }
 
 function show_all_submissions(){

@@ -1,5 +1,5 @@
 from .models import Classroom
-
+from django.conf import settings
 def data(request,params={}):
     user = request.user
     if user.is_authenticated:
@@ -9,4 +9,5 @@ def data(request,params={}):
             'classes':my_classes,
             'read':read
         }
+    params['x']= request.scheme+ request.META['HTTP_HOST'] + '/'
     return params

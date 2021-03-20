@@ -6,9 +6,10 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config('SECRET')
 SITE_ID = config('SITE')
 ALLOWED_HOSTS = ['*']
-
+HONEYPOT_FIELD_NAME = config('honeypot_field')
+HONEYPOT_VALUE = config('honeypot_value')
 PRODUCTION = config('PROD', default=False, cast=bool)
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = True #config('DEBUG', default=False, cast=bool)
 HTML_MINIFY = False
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'imagekit',
     'notifications',
     "anymail",
+    'honeypot',
 
     #all auth
     'allauth',
@@ -55,6 +57,8 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'htmlmin.middleware.HtmlMinifyMiddleware',
     'htmlmin.middleware.MarkRequestMiddleware',
+    'honeypot.middleware.HoneypotResponseMiddleware',
+    'honeypot.middleware.HoneypotViewMiddleware',
 ]
 
 ROOT_URLCONF = 'guru.urls'

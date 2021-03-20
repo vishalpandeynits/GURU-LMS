@@ -34,6 +34,7 @@
               <p id="state" class="state">{{user.username}}</p>
               <p id="state" class="state">Joined on {{user.date_joined|date }} </p>
             </div>
+           
           </div>
         </div>
       
@@ -57,6 +58,7 @@
                 </p>
               </div>
               {% endif %}
+              <a style="font-size:1em;"href="{% url 'password_change' %}" class="lead">Change Password?</a>
             </div>
           </div>
 
