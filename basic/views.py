@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.models import User
 from django.http import Http404,HttpResponse
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q,Count
 from .forms import *
 from .models import *
 from .email import *
@@ -698,4 +698,17 @@ def privacy(request):
 
 @login_required
 def bug_report(request):
-    pass
+    reporters = User.objects.filter(id__in=Bug_report.objects.values_list('user__id',flat=True)).annotate(itemcount=Count('bug_report')).order_by('-itemcount')[:20]
+    if request.method=="POST":
+        form = BugReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.user = request.user
+            form.save()
+    else:
+        form = BugReportForm()
+    params={
+        'form':form,
+        'reporters':reporters
+    }
+    print(reporters)
+    return render(request,'bug_report.html',params)

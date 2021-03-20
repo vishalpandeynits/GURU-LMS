@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %} BUG REPORT {% endblock %}
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/nicepage.css' %}">
+<link rel="stylesheet"  href="{% static 'css/home1.css' %}">
+<link rel="stylesheet"  href="{% static 'css/intro.css' %}">
+<style>
+    body{
+        background:white;
+        font-size: 1em;;
+    }
+    input[type="text"]{
+        width:100%;
+    }
+    #bug-form{
+        border-radius:20px;
+        border:1px solid black; 
+        box-shadow:0 0 10px grey; 
+        padding: 10px 20px;
+        margin:10px;
+        background-color: rgb(243, 243, 243);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<a id="button"></a>
+<div id='navbar' style="background-color: white;box-shadow: 0px 0px 8px grey;height:70px;margin-bottom:70px;">
+  <a class="nav-btn mx-4" href="{% url 'home' %}">Home </a>
+  <a class="nav-btn mx-4" href="{% url 'features' %}">Features </a>
+  <a class="nav-btn mx-4" href="{% url 'home' %}#contactus">Contact</a>
+</div><br><br>
+<div class="row">
+    <div class="col-sm-12 col-md-8 mx-auto p-4">
+        <h1 class="text-center"> Report Bug </h1>
+        <p class="lead">
+            If you notice something on this site isn't working correctly
+            like a broken feature or a technical problem you can report it to us.  
+            Make sure to include as much detail about the problem as possible
+            in your report. Information like the kind of device you
+            were using, what you were doing when the problem occurred and
+            adding a screenshot may help us address the issue. In return we will
+            be thankful to you.(You know we don't have fund now.  &#128540;)
+        </p>
+        <form id="bug-form" method="POST" enctype="multipart/form-data">
+            <h2 class="heading"> Form</h2>
+            {{ form|crispy }}<br>
+            <input class="btn btn-dark btn-block" type="submit" value="Submit Bug" ><br>
+        </form>
+    </div>
+    <div class="col-md-4 p-4">
+        <h4 class="text-center"> Top Contributors</h4>
+        <center>
+            <table class="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Approved reports</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for reporter in reporters %}
+                  <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ reporter.first_name }} {{ reporter.last_name }}</td>
+                    <td>{{reporter.bug_report_set.count}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+        </center>
+    </div>
+</div>
+{% include 'snippets/footer.html' %}
+{% endblock %}
