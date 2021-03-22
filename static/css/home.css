@@ -350,7 +350,7 @@ padding-right: 2px;
   width:250px !important;
   padding:10px 40px;
   background: black;
-  border:2px solid black;
+  border:2px solid black; 
   color:white;
   border:none;
   font-weight:bolder;
@@ -361,7 +361,8 @@ padding-right: 2px;
 }
 .overlay .overlayform input[type="submit"]:hover{
   color:black;
-  background-color:white;
+  background-color:rgb(94, 211, 94);
+  box-shadow:0px 0px 15px grey;
 }
 .overlay .overlayform input:focus,textarea:focus{
   border: 2px solid rgb(31, 157, 241);

@@ -5,9 +5,6 @@ $(window).on('load', function(){
     $('#status').fadeOut();
     $('#preloader').delay(150).fadeOut('slow');
 })
-$.ajaxSetup({
-    headers: { "X-CSRFToken": '{{csrf_token}}' }
-});
 
 if (window.history.replaceState) {
     window.history.replaceState(null, null, window.location.href);

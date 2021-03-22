@@ -2,14 +2,13 @@
 {% load filters %}
 {% load static %}
 {% block title %} POLL DETAILS {% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/polls.css' %}">
-<script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
 <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
 {% include 'django_quill/media.html' %}
 {% endblock %}
-{% load cache %}
-{% cache 100 poll %}
+
 {% block content %}
 <div>
     {% include 'snippets/navigation.html' %}
@@ -17,12 +16,11 @@
         <div class="row m-0 p-0 container-fluid">
             <div class="col-md-7 mx-auto col-lg-8 col-sm-12">
                 {% if is_admin %}
-                <a class="btn btn-danger m-1 side-buttons float-right" 
-                    style="background:red;" 
-                    data-entity="user" id="userDeleteButton"
-                    href="{% url 'delete_poll' classroom.unique_id poll.id %}"> 
-					Delete <i class="fa fa-trash" aria-hidden="true"></i>
-                 </a>
+                <button class="btn btn-danger m-1 side-buttons float-right" 
+                    style="background:red;" id="userDeleteButton"
+                    value="{% url 'delete_poll' classroom.unique_id poll.id %}"> 
+					Deletes <i class="fa fa-trash" aria-hidden="true"></i>
+                </button>
                 {% include 'snippets/deleteconfirm.html' %}
                 <a  class="btn m-1 side-buttons float-right" style="background:black;"
                 onclick="on(document.getElementsByClassName('overlay')[0])">
@@ -119,6 +117,9 @@
         
     </div>
 </div>
+{% endblock %}
+{% block javascript %}
+<script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
 <script>
     $('#id_announce_at').datetimepicker({
         datepicker: { showOtherMonths: true },
@@ -129,4 +130,3 @@
     });
 </script>
 {% endblock %}
-{% endcache %}

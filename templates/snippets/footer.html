@@ -87,10 +87,15 @@
                                   </b>
                                </h5>
                                <div style="font-size:1.2em;"class="u-block-content u-text u-text-8">
+                                 {% if user.is_authenticated %}
+                                 <a href="{% url 'logout' %}">Log Out </a>
+                                 {% else %}
                                   <a href="{% url 'signup' %}"> Sign Up</a><br>
                                   <a href="{% url 'login' %}">Log In</a><br>
+                                  {% endif %}
                                   <a href="{% url 'features' %}"> Features</a><br>
                                   <a href="{% url 'privacy' %}"> Privacy policy </a><br>
+                                  <a href="{% url 'bug_report' %}"> Report Bug</a><br>
                                   <a href="https://github.com/vishalpandeyvip/" target="_blank"> Developer </a><br>
                                </div>
                                <!--/block_content-->
@@ -105,25 +110,25 @@
           </div>
           <div class="social_links">
              <a href="https://www.instagram.com/_vishalpandeyvip/" target="_blank">
-                 <span class="fa-stack fa-lg ig combo">
+                 <span title="instagram"class="fa-stack fa-lg ig combo">
                      <i class="fa fa-circle fa-stack-2x circle"></i>
                      <i class="fa fa-instagram fa-stack-1x fa-inverse icon"></i>
                    </span>
              </a>
              <a href="https://www.facebook.com/bishal.panday.9275" target="_blank">
-                 <span class="fa-stack fa-lg fb combo">
+                 <span title="facebook" class="fa-stack fa-lg fb combo">
                      <i class="fa fa-circle fa-stack-2x circle"></i>
                      <i class="fa fa-facebook fa-stack-1x fa-inverse icon"></i>
                    </span>
              </a>
              <a href="https://www.linkedin.com/in/vishal-pandey-63262b1a0/" target="_blank">
-                 <span class="fa-stack fa-lg tw combo">
+                 <span title="linkedin" class="fa-stack fa-lg tw combo">
                      <i class="fa fa-circle fa-stack-2x circle"></i>
                      <i class="fa fa-linkedin fa-stack-1x fa-inverse icon"></i>
                  </span>
              </a>
              <a href="https://www.github.com/vishalpandeyvip/" target="_blank">
-                <span class="fa-stack fa-lg tw combo">
+                <span title="github" class="fa-stack fa-lg tw combo">
                     <i class="fa fa-circle fa-stack-2x circle"></i>
                     <i class="fa fa-github fa-stack-1x fa-inverse icon"></i>
                 </span>

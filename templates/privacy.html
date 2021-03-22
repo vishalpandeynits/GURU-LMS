@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="{% static 'css/nicepage.css' %}">
 <link rel="stylesheet" href="{% static 'css/home1.css' %}">
 <link rel="stylesheet" href="{% static 'css/intro.css' %}">
-<link crossorigin="anonymous" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" rel="stylesheet">
 <style>
    body{
       margin:0;
@@ -124,21 +123,24 @@ or by one of the other means listed.</p>
  <b>
     Note: We expect you to use this site for the the same purpose for which we have created this website.
     Your account will be disabled if you are found doing any illegal, unlawful or  unhuman activity.
+    Also running crawlers, spambots or any objectionable script on this site can lead to permanent
+   removal of your account from this website.
  </b><br>
 </div>
    {% include 'snippets/footer.html' %}
-
-   <script>
-      /*scroll to top */
-      var btn = $('#button');
-      $(window).scroll(function() {
-      if ($(window).scrollTop() > 0) btn.addClass('show');
-      else btn.removeClass('show');
-      });
-      btn.on('click', function(e) {
-         e.preventDefault();
-         $('html, body').animate({scrollTop:0}, '300');
-      });
-      /*scroll to top ends */
-   </script>
+{% endblock %}
+{% block javascript %}
+<script>
+   /*scroll to top */
+   var btn = $('#button');
+   $(window).scroll(function() {
+   if ($(window).scrollTop() > 0) btn.addClass('show');
+   else btn.removeClass('show');
+   });
+   btn.on('click', function(e) {
+      e.preventDefault();
+      $('html, body').animate({scrollTop:0}, '300');
+   });
+   /*scroll to top ends */
+</script>
 {% endblock %}

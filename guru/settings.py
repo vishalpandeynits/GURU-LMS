@@ -6,10 +6,11 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config('SECRET')
 SITE_ID = config('SITE')
 ALLOWED_HOSTS = ['*']
-
+HONEYPOT_FIELD_NAME = config('honeypot_field')
+HONEYPOT_VALUE = config('honeypot_value')
 PRODUCTION = config('PROD', default=False, cast=bool)
 DEBUG = config('DEBUG', default=False, cast=bool)
-HTML_MINIFY = False
+HTML_MINIFY = not DEBUG
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'imagekit',
     'notifications',
     "anymail",
+    'honeypot',
 
     #all auth
     'allauth',
@@ -55,6 +57,8 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'htmlmin.middleware.HtmlMinifyMiddleware',
     'htmlmin.middleware.MarkRequestMiddleware',
+    'honeypot.middleware.HoneypotResponseMiddleware',
+    'honeypot.middleware.HoneypotViewMiddleware',
 ]
 
 ROOT_URLCONF = 'guru.urls'
@@ -63,7 +67,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS' : True,
+        # 'APP_DIRS' : True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -73,11 +77,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 "basic.context_preprocess.data",
             ],
-            # 'loaders': [
-            # ('django.template.loaders.cached.Loader', [
-            #     'django.template.loaders.filesystem.Loader',
-            #     'django.template.loaders.app_directories.Loader',
-            # ])],
+            'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ])],
         },
     },
 ]
@@ -144,7 +148,7 @@ QUILL_CONFIGS = {
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGIN_REDIRECT_URL ='/homepage/'
 LOGOUT_REDIRECT_URL = '/'

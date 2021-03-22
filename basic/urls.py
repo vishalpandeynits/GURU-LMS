@@ -5,6 +5,7 @@ urlpatterns = [
     path('',home,name="home"),
     path('features/',features,name="features"),
     path('privacy-policy/',privacy,name="privacy"),
+    path('bug-report/',bug_report,name="bug_report"),
     path('homepage/',homepage,name="homepage"),
     path('classroom/<unique_id>/',classroom_page,name="classroom_page"),
     path('class/<unique_id>/',subjects,name="subjects"),

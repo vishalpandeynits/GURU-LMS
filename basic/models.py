@@ -7,7 +7,7 @@ from guru.storage_back import PrivateMediaStorage
 from imagekit.processors import ResizeToFill
 
 class Classroom(models.Model):
-	created_by = models.ForeignKey(User, on_delete = models.CASCADE,related_name='created_by')
+	created_by = models.ForeignKey(User, on_delete = models.PROTECT,related_name='created_by')
 	members = models.ManyToManyField(User)
 	teacher = models.ManyToManyField(User, related_name='classroom_teachers')
 	special_permissions = models.ManyToManyField(User, related_name= "special_permissions")
@@ -27,7 +27,7 @@ class Classroom(models.Model):
 class Subject(models.Model):
 	classroom = models.ForeignKey(Classroom, on_delete = models.CASCADE)
 	subject_name = models.CharField(max_length=50)
-	teacher = models.ForeignKey(User,on_delete=models.CASCADE,related_name="teacher")
+	teacher = models.ForeignKey(User,on_delete=models.PROTECT,related_name="teacher")
 	upload_permission = models.ManyToManyField(User,related_name="upload_permitted")
 	subject_pic = ProcessedImageField(upload_to="subject_content",default="book.jpg",storage=PrivateMediaStorage(),
 	processors=[ResizeToFill(1000, 1000)],format='JPEG',options={'quality': 100})
@@ -42,7 +42,7 @@ class Note(models.Model):
 	file = models.FileField(storage=PrivateMediaStorage(),upload_to="notes",null=True,blank=True,)
 	topic = models.CharField(max_length=100,)
 	description = QuillField()
-	uploaded_by = models.ForeignKey(User,on_delete=models.CASCADE)
+	uploaded_by = models.ForeignKey(User,on_delete=models.PROTECT)
 
 	def __str__(self):
 		return self.topic
@@ -53,7 +53,7 @@ class Announcement(models.Model):
 	subject = models.CharField(max_length=100)
 	description = QuillField()
 	file = models.FileField(storage=PrivateMediaStorage(),upload_to="announcements",null=True,blank=True)
-	announced_by = models.ForeignKey(User,on_delete=models.CASCADE)
+	announced_by = models.ForeignKey(User,on_delete=models.PROTECT)
 
 	def __str__(self):
 		return self.subject
@@ -65,7 +65,7 @@ class Assignment(models.Model):
 	topic = models.CharField(max_length=100,)
 	description = QuillField()
 	submission_date = models.DateTimeField() 
-	assigned_by = models.ForeignKey(User,on_delete=models.CASCADE)
+	assigned_by = models.ForeignKey(User,on_delete=models.PROTECT)
 	submitted_by = models.ManyToManyField(User,related_name="Submissions")
 	full_marks = models.IntegerField(default=100)
 	submission_link = models.BooleanField(default=True)
@@ -87,19 +87,17 @@ class Submission(models.Model):
 class Subject_activity(models.Model):
 	subject = models.ForeignKey(Subject, on_delete = models.CASCADE)
 	action = models.CharField(max_length=100)
-	actor = models.ForeignKey(User,on_delete = models.DO_NOTHING)
+	actor = models.ForeignKey(User,on_delete = models.PROTECT)
 	time = models.DateTimeField(auto_now_add = True)
 	url = models.URLField(null=True,blank=True)
 
 	def __str__(self):
 		return self.action
 
-class Classroom_activity(models.Model):
-	classroom = models.ForeignKey(Classroom, on_delete = models.CASCADE)
-	action = models.CharField(max_length=100)
-	actor = models.ForeignKey(User,on_delete = models.DO_NOTHING)
-	time = models.DateTimeField(auto_now_add = True)
-	url = models.URLField(null=True,blank=True)
-
-	def __str__(self):
-		return self.action
+class Bug_report(models.Model):
+	user = models.ForeignKey(User,on_delete=models.CASCADE)
+	bug = models.CharField(max_length = 100)
+	description = models.TextField()
+	approved = models.BooleanField(default=False)
+	screenshot = models.ImageField(upload_to="bugs/",null=True,blank=True)
+	reported_at = models.DateTimeField(auto_now_add=True)
