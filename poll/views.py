@@ -14,7 +14,7 @@ from notifications.signals import notify
 
 @login_required
 def polls(request,unique_id,form=None):
-	classroom = Classroom.objects.get(unique_id=unique_id)
+	classroom = get_object_or_404(Classroom,unique_id = unique_id)
 	if member_check(request.user,classroom):
 		polls = Poll.objects.filter(classroom=classroom)
 		#handling forms of poll and its choice
@@ -56,9 +56,9 @@ def polls(request,unique_id,form=None):
 
 @login_required
 def poll_page(request,unique_id, poll_id,form=None):
-	classroom = Classroom.objects.get(unique_id = unique_id)
+	classroom = get_object_or_404(Classroom,unique_id = unique_id)
+	poll = get_object_or_404(Poll,id=poll_id)
 	if member_check(request.user,classroom):
-		poll = Poll.objects.get(id=poll_id)
 		choices = Choice.objects.all().filter(poll=poll)
 		time_up = timezone.now() >= poll.announce_at
 		if time_up:
@@ -91,8 +91,8 @@ def poll_page(request,unique_id, poll_id,form=None):
 
 @login_required
 def voting(request,unique_id,poll_id,choice_id):
-	classroom = Classroom.objects.get(unique_id = unique_id)
-	poll=Poll.objects.get(id=poll_id)
+	classroom = get_object_or_404(Classroom,unique_id = unique_id)
+	poll = get_object_or_404(Poll,id=poll_id)
 	url = reverse('poll_page',kwargs={'unique_id':classroom.unique_id,'poll_id':poll.id})
 	if member_check(request.user,classroom):
 		choice = Choice.objects.filter(poll=poll)
@@ -113,6 +113,7 @@ def voting(request,unique_id,poll_id,choice_id):
 				choice.votes += 1
 				poll.voters.add(request.user)
 				choice.save()
+				return redirect(request.META['HTTP_REFERER'])
 		else:
 			messages.add_message(request,messages.INFO,"Time's up for voting")
 			return redirect(url)
