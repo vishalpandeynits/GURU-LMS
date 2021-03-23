@@ -218,7 +218,7 @@ if PRODUCTION:
 
     # AWS_S3_REGION_NAME = 'ap-south-1'
     # AWS_S3_SIGNATURE_VERSION = 's3v4'
-    AWS_S3_ENDPOINT_URL = f'https://fra1.digitaloceanspaces.com'
+    # AWS_S3_ENDPOINT_URL = f'https://fra1.digitaloceanspaces.com'
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
