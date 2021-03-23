@@ -702,13 +702,14 @@ def bug_report(request):
     if request.method=="POST":
         form = BugReportForm(request.POST, request.FILES)
         if form.is_valid():
+            form = form.save(commit=False)
             form.user = request.user
             form.save()
+            return redirect(request.META['HTTP_REFERER'])
     else:
         form = BugReportForm()
     params={
         'form':form,
         'reporters':reporters
     }
-    print(reporters)
     return render(request,'bug_report.html',params)

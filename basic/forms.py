@@ -1,6 +1,7 @@
 from django import forms
 from .models import Bug_report, Classroom, Subject, Note, Announcement, Assignment, Submission
 from django.forms.widgets import NumberInput
+from django.contrib.auth.models import User
 
 class CreateclassForm(forms.ModelForm):
 	class Meta:
@@ -45,4 +46,3 @@ class BugReportForm(forms.ModelForm):
 	class Meta:
 		model = Bug_report
 		fields = ['bug','description']
-

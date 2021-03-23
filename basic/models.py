@@ -95,7 +95,7 @@ class Subject_activity(models.Model):
 		return self.action
 
 class Bug_report(models.Model):
-	user = models.ForeignKey(User,on_delete=models.CASCADE)
+	user = models.ForeignKey(User,on_delete=models.PROTECT)
 	bug = models.CharField(max_length = 100)
 	description = models.TextField()
 	approved = models.BooleanField(default=False)
