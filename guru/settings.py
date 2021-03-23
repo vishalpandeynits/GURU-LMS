@@ -197,8 +197,6 @@ if PRODUCTION:
         "MAILJET_API_KEY": config('MAILJET_API_KEY'),
         "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
     }
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
@@ -210,15 +208,16 @@ if PRODUCTION:
     }
     AWS_LOCATION = 'media'
     AWS_QUERYSTRING_AUTH=True
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
     AWS_PRIVATE_MEDIA_LOCATION = 'private'
     PRIVATE_FILE_STORAGE = 'guru.storage_back.PrivateMediaStorage'
 
     AWS_PUBLIC_MEDIA_LOCATION ='public'
     PUBLIC_FILE_STORAGE = 'guru.storage_back.PublicMediaStorage'
 
-    # AWS_S3_REGION_NAME = 'ap-south-1'
-    # AWS_S3_SIGNATURE_VERSION = 's3v4'
-    # AWS_S3_ENDPOINT_URL = f'https://fra1.digitaloceanspaces.com'
+    AWS_S3_REGION_NAME = 'ap-south-1'
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
