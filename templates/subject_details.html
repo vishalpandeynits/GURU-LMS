@@ -1,8 +1,10 @@
 {% extends 'snippets/subject_page.html' %}
 {% block title %} {{ subject.subject_name|upper }} {% endblock %}
 {% load static %}
+{% load filters %}
 {% load humanize %}
-
+{% load socialaccount %}
+{% get_social_accounts user as accounts %}
 {% block css %}
 <style>
 	#overlayform .subject_description{
@@ -80,7 +82,16 @@
 	<div class="member-card bg-light m-auto">
 		<div style="display:flex;">
 			<div>
-				<img height="70" width="70"src="{{member.profile.profile_pic.url}}">
+				<img height="70" width="70"
+				{% if accounts %} 
+					{% if member.profile.profile_pic|filebasename != 'avatar.jpg' %}
+						src="{{ member.profile.profile_pic.url }}"
+					{% else %}
+						src="{{ member.socialaccount_set.all.0.get_avatar_url }}"
+					{% endif %}
+				{% else %}
+					src="{{ member.profile.profile_pic.url }}"
+				{% endif %}>
 			</div>
 			<div>
 				<h5> {{member.first_name }} {{member.last_name}}</h5>

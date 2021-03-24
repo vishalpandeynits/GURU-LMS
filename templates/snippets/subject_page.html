@@ -4,7 +4,7 @@
 {% load account %}
 {% load socialaccount %}
 {% load notifications_tags %} 
-
+{% get_social_accounts user as accounts %}
 {% block content %}
 <div class="row">
     <div class="col-2">
@@ -87,7 +87,7 @@
         <div class="user-icon"  onclick="on_nav(_('dropdown-container'))" >
             <img id="icon" height="50" width="50"
             {% if accounts %} 
-                {% if p_user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
                     src="{{ user.profile.profile_pic.url }}"
                 {% else %}
                     src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
@@ -96,6 +96,7 @@
                 src="{{ user.profile.profile_pic.url }}"
             {% endif %}
             >
+        </div>
         </div>
         <div id="dropdown-container" style="flex-direction: column;"class="bg-dark float-right text-dark">
             <a class="text-light d-block" href="{% url 'profile' user.username %}">

@@ -1,5 +1,8 @@
 {% load comments %}
 {% load humanize %}
+{% load filters %}
+{% load socialaccount %}
+{% get_social_accounts user as accounts %}
 <div>
    {% get_comment_form for announcement as form %}
 
@@ -27,8 +30,16 @@
     {% for comment in comment_list reversed %}
         <div class="comment-box p-2">
             <a href="{% url 'profile' comment.user.username %}">
-              <img class="float-left mr-4"
-                src="{{comment.user.profile.profile_pic.url }}">
+            <img class="float-left mr-4"
+            {% if accounts %} 
+                {% if comment.user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                    src="{{ comment.user.profile.profile_pic.url }}"
+                {% else %}
+                    src="{{ comment.user.socialaccount_set.all.0.get_avatar_url }}"
+                {% endif %}
+            {% else %}
+                src="{{ comment.user.profile.profile_pic.url }}"
+            {% endif %}>
                 <b style="color:blue;">{{ comment.user.first_name}} {{comment.user.last_name }}</b>
             </a>
             

@@ -34,7 +34,7 @@
                 <br><br>
                 {% if is_admin %}
                 <div class="overlay">
-                    <form method="POST" class="overlayform"  enctype="multipart/form-data">
+                    <form method="POST" onsubmit="return validate()" class="overlayform"  enctype="multipart/form-data">
                         {% csrf_token %}
                         <a onclick = "off(document.getElementsByClassName('overlay')[0])" id="close"> &times;</a> <br>
                         <h1 class="text-center"> Update</h1><br>

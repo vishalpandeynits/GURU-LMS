@@ -14,14 +14,15 @@
 
 {% block content %}
 {% include 'snippets/navigation.html' %}
+{% get_social_accounts user as accounts %}
 <div>
     <div class="container">
         {% if user == p_user %}
         <div class="profile-header">
           <div class="profile-img">
             <img width="200" alt="Profile Image"
-            {% if accounts %} 
-                {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+             {% if accounts %} 
+                {% if p_user.profile.profile_pic|filebasename != 'avatar.jpg' %}
                     src="{{ user.profile.profile_pic.url }}"
                 {% else %}
                     src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
@@ -162,8 +163,6 @@
           {% else %}
               src="{{ p_user.profile.profile_pic.url }}"
           {% endif %}><br><br><br>
-          
-  
           <h3 class="text-center">{{ profile.user.username }}</h3>
           <h4 class="text-center"> {{p_user.first_name }} {{p_user.last_name }}</h4>
           <pre class="text-center">{{ profile.bio }}</pre>

@@ -1,9 +1,27 @@
 {% extends "socialaccount/base.html" %}
 {% load i18n %}
+{% load socialaccount %} 
 {% block head_title %}{% trans "Social Network Login Failure" %}{% endblock %}
 {% block content %}
 {% include 'snippets/navigation.html' %}
-<h1>{% trans "Social Network Login Failure" %}</h1>
-<p>{% trans "An error occurred while attempting to login via your social network account." %}</p>
-{% include 'footer/navigation.html' %}
+<style>
+    body{
+        background:white !important;
+
+    }
+    #content{
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+</style>
+<div id="content">
+    <h1>{% trans "Social Network Login Failure" %}</h1>
+    <p>An error occurred while attempting to login via your social network account. 
+        This may occur if you already registered with us using your email and then try with social login. <br>If you forgot password reset it now.</p>
+        <a style="text-align: center;" href="{% url 'password_reset' %}" class="btn btn-primary ">
+            <span>Forgot password?</span>
+        </a>
+</div>
 {% endblock %}

@@ -27,6 +27,10 @@ INSTALLED_APPS = [
     #packages
     'django.contrib.humanize',
     'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'django_comments',
     'django_quill',
     'rest_framework',
@@ -37,12 +41,6 @@ INSTALLED_APPS = [
     'notifications',
     "anymail",
     'honeypot',
-
-    #all auth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +65,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        # 'APP_DIRS' : True,
+        'APP_DIRS' : True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -77,11 +75,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 "basic.context_preprocess.data",
             ],
-            'loaders': [
-            ('django.template.loaders.cached.Loader', [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-            ])],
+            # 'loaders': [
+            # ('django.template.loaders.cached.Loader', [
+            #     'django.template.loaders.filesystem.Loader',
+            #     'django.template.loaders.app_directories.Loader',
+            # ])],
         },
     },
 ]
@@ -208,7 +206,7 @@ if PRODUCTION:
     }
     AWS_LOCATION = 'media'
     AWS_QUERYSTRING_AUTH=True
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    DEFAULT_FILE_STORAGE = 'guru.storage_back.PublicMediaStorage'
     SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
     AWS_PRIVATE_MEDIA_LOCATION = 'private'
     PRIVATE_FILE_STORAGE = 'guru.storage_back.PrivateMediaStorage'

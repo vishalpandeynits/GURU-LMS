@@ -1,7 +1,7 @@
 from django import forms
 from .models import Bug_report, Classroom, Subject, Note, Announcement, Assignment, Submission
 from django.forms.widgets import NumberInput
-from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 class CreateclassForm(forms.ModelForm):
 	class Meta:
@@ -22,6 +22,12 @@ class NoteForm(forms.ModelForm):
 	class Meta:
 		model = Note
 		fields = ['topic','file','description']
+		
+	def clean(self,*args, **kwargs):
+		if 'description' not in self.cleaned_data.keys():
+			print("nhi hai")
+			raise ValidationError('Description must not be less than 20 characters.')
+		return self.cleaned_data
 
 class AssignmentForm(forms.ModelForm):
 	class Meta:
