@@ -122,15 +122,15 @@
 </div>
 {% endblock %}
 {% block javascript %}
-{% if is_teacher %}
+{% if is_admin %}
 <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
 <script>
     $('#id_announce_at').datetimepicker({
         datepicker: { showOtherMonths: true },
         modal: true,
         footer: true,
-        format:'dd/mm/yyyy HH:MM',
-        value: '{{ poll.announce_at|date:"d/m/Y" }} {{ poll.announce_at|time:"H:i" }}' 
+        format:'mm/dd/yyyy HH:MM',
+        value: '{{ poll.announce_at|date:"m/d/Y" }} {{ poll.announce_at|time:"H:i" }}' 
     });
 </script>
 {% endif %}

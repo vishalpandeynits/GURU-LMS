@@ -31,7 +31,7 @@ def polls(request,unique_id,form=None):
 					form.save()
 					for i in choice_list:
 						choice=Choice()
-						choice.poll = Poll.objects.get(id=form.id)
+						choice.poll = get_object_or_404(Poll,id=form.id)
 						choice.choice_text = i
 						choice.save()
 					verb = f'A poll added in f{classroom.class_name}'
@@ -109,7 +109,7 @@ def voting(request,unique_id,poll_id,choice_id):
 				messages.add_message(request,messages.INFO,"You have already voted.")
 				return redirect(url)
 			else:
-				choice=Choice.objects.get(id=choice_id)
+				choice=get_object_or_404(Choice,id=choice_id)
 				choice.votes += 1
 				poll.voters.add(request.user)
 				choice.save()

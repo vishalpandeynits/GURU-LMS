@@ -65,7 +65,7 @@
 							{{ field }}
 						{% endif %}
 					{% endfor %}
-					<input type="submit" class="btn btn-primary float-right mt-4"value="Add Assignment">
+					<input type="submit" class="btn btn-primary float-right mt-4" value="Add Assignment">
 				</div>
 			</form>
 		</div>
@@ -73,7 +73,7 @@
 
 	{% if assignments %}
 		<div style="min-height:600px;"> 
-			{% for assignment in assignments %}
+			{% for assignment in assignments reversed %}
 			<div class="container row">
 				<div class="col-12">
 					<a href="{% url 'assignment_page' classroom.unique_id subject.id assignment.id %}">
@@ -106,7 +106,7 @@
             datepicker: { showOtherMonths: true,calendarWeeks: true },
             modal: true,
 			footer: true,
-			format:'dd/mm/yyyy HH:MM',
+			format:'mm/dd/yyyy HH:MM',
         });
 </script>
 {% endblock %}
