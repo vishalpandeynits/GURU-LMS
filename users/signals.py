@@ -14,13 +14,3 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
 	instance.profile.save()
-
-# @receiver(user_logged_in)
-# def save_dp(request,user,**kwargs):
-# 	mine = SocialAccount.objects.filter(user=request.user).first()
-# 	profile = Profile.objects.get(user=request.user)
-# 	image_url = mine.get_avatar_url()
-# 	ind = image_url.index('lh3')
-# 	profile.profile_pic = str(image_url[ind:])
-# 	print("Hello", profile.profile_pic)
-# 	profile.save()

@@ -7,7 +7,9 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/detailpage.css' %}">
+{% if is_teacher %}
 {% include 'django_quill/media.html' %}
+{% endif %}
 <style>
     .buttons {
         border: none;

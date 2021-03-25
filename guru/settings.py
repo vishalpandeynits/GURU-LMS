@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'django_quill',
     #myapps
     'basic.apps.BasicConfig',
     'users.apps.UsersConfig',
@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'django_comments',
-    'django_quill',
     'rest_framework',
     'crispy_forms',
     "django_filters",
