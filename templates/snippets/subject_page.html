@@ -52,9 +52,7 @@
         <span id="openNav" onclick="openNav()">
             &#9776;
         </span>
-        {% if classroom %}
-            <span class="class-name"> {{ classroom.class_name|slice:"0:20" }}</span>
-        {% endif %}
+        <span class="class-name"> {{ subject.subject_name|slice:"0:20" }}</span>
     </div>
     <div class="second-box">  
         {% if user.is_authenticated %}
