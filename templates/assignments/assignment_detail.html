@@ -63,8 +63,8 @@
 				</button>
 
 				<a href="{% url 'assignment-handle' classroom.unique_id subject.id assignment.id %}"
-				style="background:black;color:white;" class="btn my-2 mx-1 buttons">
-					Assign Marks<i class="fas fa-edit"></i>
+				style="background:rgb(25, 185, 78);color:white;" class="btn my-2 mx-1 buttons">
+					Evaluation<i class="fas fa-edit"></i>
 				</a>
 			{% endif %}
 
@@ -138,7 +138,7 @@
 <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
 <script>
 	$('#id_submission_date').datetimepicker({
-            datepicker: { showOtherMonths: true },
+		datepicker: { showOtherMonths: true,calendarWeeks: true },
             modal: true,
 			footer: true,
 			format:'mm/dd/yyyy HH:MM',

@@ -271,7 +271,6 @@ def note_delete(request,unique_id,subject_id,id):
 def assignments_list(request ,unique_id, subject_id, form=None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
     if member_check(request.user,classroom):
-        print("hello world1")
         subject = get_object_or_404(Subject,id=subject_id)
         assignments = Assignment.objects.filter(subject_name=subject).reverse()
         search = request.GET.get('search')
@@ -284,18 +283,15 @@ def assignments_list(request ,unique_id, subject_id, form=None):
         is_teacher = admin_check or subject.teacher==request.user
 
         if is_teacher:
-            print("hello world2")
             if request.method=="POST":
-                print("Hello world3")
                 form = AssignmentForm(request.POST,request.FILES)
-                print("Form",form.is_valid(),form.errors)
+                datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
                 if form.is_valid():
-                    print("hello world4")
                     assignment = form.save(commit=False)
+                    assignment.submission_date = datetime_object
                     assignment.subject_name = subject
                     assignment.assigned_by = request.user
                     assignment.save()
-                    print("hello world")
                     return redirect(request.META['HTTP_REFERER'])
             else:
                 form= AssignmentForm()
@@ -322,10 +318,12 @@ def assignment_details(request,unique_id,subject_id,id):
         if is_teacher:
             if request.method=="POST":
                 updateform = AssignmentForm(request.POST,request.FILES,instance=assignment)
+                datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
                 if updateform.is_valid():
-                    updateform.save()
-                    return redirect(reverse('assignment_page',kwargs={
-                        'unique_id':classroom.unique_id,'subject_id':subject.id,'id':assignment.id}))
+                    form = updateform.save(commit=False)
+                    form.submission_date = datetime_object
+                    form.save()
+                    return redirect(request.META['HTTP_REFERER'])
             else:
                 updateform= AssignmentForm(instance=assignment)
         #submitting assignment
@@ -334,14 +332,16 @@ def assignment_details(request,unique_id,subject_id,id):
             if request.method=="POST":
                 if assignment.submission_link:
                     form = SubmitAssignmentForm(request.POST, request.FILES,instance=submission_object)
+                    if(submission_object.marks_assigned):
+                        messages.add_message(request,messages.WARNING, 'Your assignment is checked, You can\'t change it now')
+                        return redirect(request.META['HTTP_REFERER'])
                     if form.is_valid():
                         data=form.save(commit=False)
                         data.submitted_by=request.user
                         data.assignment= assignment
                         data.save()
                         assignment.submitted_by.add(request.user)
-                        return redirect(reverse('assignment_page',kwargs=
-                            {'unique_id':classroom.unique_id,'subject_id':subject.id,'id':assignment.id}))
+                        return redirect(request.META['HTTP_REFERER'])
                 else:
                     messages.add_message(request,messages.WARNING,"Submission link is closed.")
             else:
@@ -364,11 +364,10 @@ def assignment_details(request,unique_id,subject_id,id):
 @login_required#checked
 def assignment_handle(request,unique_id,subject_id,id):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    is_admin = classroom.special_permissions.filter(username = request.user.username).exists()
     subject = get_object_or_404(Subject,id=subject_id)
     is_teacher = request.user==subject.teacher
-    if is_admin or is_teacher:
-        assignment = get_object_or_404(Assignment,id=id)
+    assignment = get_object_or_404(Assignment,id=id)
+    if is_teacher:
         if request.POST.get('marks_assigned'):
             id  = request.POST.get('id') 
             submission = get_object_or_404(Submission,id=id)
@@ -385,43 +384,39 @@ def assignment_handle(request,unique_id,subject_id,id):
                 'id':assignment.id
                 }))
 
-        #list of submissions
-        all_submissions = Submission.objects.filter(assignment=assignment)
-        late_submissions = all_submissions.filter(submitted_on__gt=assignment.submission_date)
-        ontime_submissions = all_submissions.filter(submitted_on__lte=assignment.submission_date)
-        members = classroom.members.all()
-        teachers = classroom.teacher.all()
-        students = members.difference(teachers).difference(classroom.special_permissions.all())
-        submitted = assignment.submitted_by.all()
-        not_submitted = students.difference(submitted)
-        
-        if request.POST.get('send_reminder')=='1':
-            #send_notification
-            recepients = User.objects.filter(username__in=not_submitted.values_list('username', flat=True))
-            url = reverse('assignment_page',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id,'id':assignment.id})
-            notify.send(sender=request.user,verb=f"Reminder to submit your assignment",recipient=recepients,url=url)
-            send_reminder(request,assignment,not_submitted.values_list('email', flat=True))
+    if request.POST.get('toggle_link'):
+        assignment.submission_link  = not assignment.submission_link
+        assignment.save()
 
-        if request.POST.get('toggle_link'):
-            if assignment.submission_link:
-                assignment.submission_link  = False
-            else:
-                assignment.submission_link = True 
-            assignment.save()
-        params = {
-            'assignment':assignment,
-            'all_submissions':all_submissions,
-            'late_submissions':late_submissions,
-            'ontime_submissions':ontime_submissions,
-            'is_teacher':is_teacher,
-            'submitted':submitted,
-            'not_submitted':not_submitted,
-            'subject':subject,
-            'classroom':classroom,
-        }
-        return render(request,'assignments/assignment_handle.html',params)
-    else:
-        raise Http404()
+    #list of submissions
+    all_submissions = Submission.objects.filter(assignment=assignment)
+    late_submissions = all_submissions.filter(submitted_on__gt=assignment.submission_date)
+    ontime_submissions = all_submissions.filter(submitted_on__lte=assignment.submission_date)
+    members = classroom.members.all()
+    teachers = classroom.teacher.all()
+    students = members.difference(teachers).difference(classroom.special_permissions.all())
+    submitted = assignment.submitted_by.all()
+    not_submitted = students.difference(submitted)
+    
+    if request.POST.get('send_reminder')=='1':
+        #send_notification
+        recepients = User.objects.filter(username__in=not_submitted.values_list('username', flat=True))
+        url = reverse('assignment_page',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id,'id':assignment.id})
+        notify.send(sender=request.user,verb=f"Reminder to submit your assignment",recipient=recepients,url=url)
+        send_reminder(request,assignment,not_submitted.values_list('email', flat=True))
+
+    params = {
+        'assignment':assignment,
+        'all_submissions':all_submissions,
+        'late_submissions':late_submissions,
+        'ontime_submissions':ontime_submissions,
+        'is_teacher':is_teacher,
+        'submitted':submitted,
+        'not_submitted':not_submitted,
+        'subject':subject,
+        'classroom':classroom,
+    }
+    return render(request,'assignments/assignment_handle.html',params)
 
 @login_required#checked
 def assignment_delete(request,unique_id,subject_id,id):

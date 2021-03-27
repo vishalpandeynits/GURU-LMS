@@ -36,6 +36,11 @@
 		</form>
 	</div>
 	<div class="container">
+		{% if all_submissions and assignment.submission_link %}
+		<p class="text-center">
+			 Note: Close submission link, so students couldn't change their submissions during evaluation. 
+		</p>
+		{% endif %}
 		<span id="all_submissions" >
 			<h1 class="heading"> All submissions </h1>
 			{% for submission in all_submissions reversed %}
@@ -58,13 +63,16 @@
 						<b style="color:green;">In time submission </b>
 					{% endif %}
 				</div>
+				{% if is_teacher %}
 				<div>
 					<button class="float-right assign-btn" onclick="on(_('{{submission.submitted_by}}all'))"> Assign marks </button>
 				</div>
+				{% endif %}
 			</div>
 
 			<div class="overlay"id="{{submission.submitted_by}}all">
 				<form class="overlayform" method="POST">{% csrf_token %}
+					<h2 class="text-center"> Assign/Reconsider Marks </h2>
 					<a class="mb-2" onclick = "off(_('{{submission.submitted_by}}all'))" id="close"> &times;</a><br>
 					<div>
 						<input type="hidden" name="id" value="{{submission.id}}">
@@ -91,9 +99,11 @@
 					</a>at {{ submission.submitted_on }}.<br>
 					<b> Marks assigned: </b> {% if submission.marks_assigned %} {{ submission.marks_assigned }} {% else %} Not assigned yet {% endif %}
 				</div>
+				{% if is_teacher %}
 				<div>
 					<button class="float-right assign-btn" onclick="on(_('{{submission.submitted_by}}on'))"> Assign marks </button>
 				</div>
+				{% endif %}
 			</div>
 
 			<div class="overlay" id="{{submission.submitted_by}}on">
@@ -104,9 +114,11 @@
 						Marks assigned:
 						<input name="marks_assigned" placeholder="Assign/Reconsider Marks" type="number" 
 						value = "{{submission.marks_assigned}}" max="{{assignment.full_marks}}">
+						{% if is_teacher %}
 						<center>
 							<button type="submit" class="btn btn-primary mt-2">Assign marks</button>
 						</center>
+						{% endif %}
 					</div>
 			   </form>
 			</div>
@@ -128,11 +140,14 @@
 					</a>at {{ submission.submitted_on }}.<br>
 					<b> Marks assigned: </b> {% if submission.marks_assigned %} {{ submission.marks_assigned }} {% else %} Not assigned yet {% endif %}
 				</div>
+				{% if is_teacher %}
 				<div>
 					<button class="float-right assign-btn" onclick="on(_('{{submission.submitted_by}}late'))"> Assign marks </button>
 				</div>
+				{% endif %}
 			</div>
 
+			{% if is_teacher %}
 			<div class="overlay"id="{{submission.submitted_by}}late">
 				<form class="overlayform" method="POST">{% csrf_token %}
 					<a class="mb-2" onclick = "off(_('{{submission.submitted_by}}late'))" id="close"> &times;</a><br>
@@ -147,6 +162,8 @@
 					</div>
 				</form>
 			</div>
+			{% endif %}
+
 			{% endfor %}
 			{% if not late_submissions|length %}
 			<h1 class="text-success text-center"> No submissions found </h1>
@@ -163,7 +180,7 @@
 					</form><br>
 				</center>
 				{% for student in not_submitted %}
-				<div class="container member-card bg-light m-2 p-2"><br/>
+				<div style="box-shadow:0px 0px 10px grey;" class="container member-card bg-light m-2 p-4 pb-2">
 					<div style="display:flex;">
 						<div>
 							<a href="{% url 'profile' student.username %}">

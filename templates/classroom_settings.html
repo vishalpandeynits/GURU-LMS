@@ -123,11 +123,13 @@
                             {% if accounts %} 
                                 {% if member.profile.profile_pic|filebasename != 'avatar.jpg' %}
                                     src="{{ member.profile.profile_pic.url }}"
-                                {% else %}
+                                {% elif member.profile.user.socialaccount_set.all.0.get_avatar_url %}
                                     src="{{ member.profile.user.socialaccount_set.all.0.get_avatar_url }}"
+                                {% else %}
+                                src="{{ member.profile.user.profile.profile_pic.url }}"
                                 {% endif %}
                             {% else %}
-                                src="{{ member.profile.user.profile.profile_pic.url }}"
+                                src="{{ member.profile.user.profile.profile_pic.url }}u"
                             {% endif %}>
                         </a>
                     </div>
@@ -155,11 +157,13 @@
                         {% if accounts %} 
                             {% if member.profile.profile_pic|filebasename != 'avatar.jpg' %}
                                 src="{{ member.profile.profile_pic.url }}"
-                            {% else %}
+                            {% elif member.profile.user.socialaccount_set.all.0.get_avatar_url %}
                                 src="{{ member.profile.user.socialaccount_set.all.0.get_avatar_url }}"
+                            {% else %}
+                            src="{{ member.profile.user.profile.profile_pic.url }}"
                             {% endif %}
                         {% else %}
-                            src="{{ member.profile.user.profile.profile_pic.url }}"
+                            src="{{ member.profile.user.profile.profile_pic.url }}u"
                         {% endif %}>
                     </a>
                 </div>

@@ -21,7 +21,7 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False
+            #user.is_active = False
             user.save()
             current_site = get_current_site(request)
             message = render_to_string('emails/acc_active_email.html', {
@@ -33,8 +33,9 @@ def signup(request):
             mail_subject = 'Activate your account.'
             to_email = form.cleaned_data.get('email')
             print(send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com' ,[to_email],html_message=message))
-            messages.add_message(request,messages.SUCCESS,'An Activation link is sent to your \
-                    registrated email id.Please visit your email and activate your account.')
+            # messages.add_message(request,messages.SUCCESS,'An Activation link is sent to your \
+            #         registrated email id.Please visit your email and activate your account.')
+            messages.add_message(request,messages.SUCCESS,'Your account is created. You can login into your account.')
             return redirect('home')
     else:
         form = SignUpForm()
