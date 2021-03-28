@@ -365,8 +365,9 @@ def assignment_details(request,unique_id,subject_id,id):
 def assignment_handle(request,unique_id,subject_id,id):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
     subject = get_object_or_404(Subject,id=subject_id)
-    is_teacher = request.user==subject.teacher
     assignment = get_object_or_404(Assignment,id=id)
+    is_teacher = request.user==subject.teacher or request.user == assignment.assigned_by
+    
     if is_teacher:
         if request.POST.get('marks_assigned'):
             id  = request.POST.get('id') 

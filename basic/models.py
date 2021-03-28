@@ -41,7 +41,7 @@ class Note(models.Model):
 	uploaded_on = models.DateTimeField(auto_now_add= True)
 	file = models.FileField(storage=PrivateMediaStorage(),upload_to="notes",null=True,blank=True,)
 	topic = models.CharField(max_length=100,)
-	description = QuillField()
+	description = QuillField(null=True,blank=True)
 	uploaded_by = models.ForeignKey(User,on_delete=models.CASCADE)
 
 	def __str__(self):
@@ -51,7 +51,7 @@ class Announcement(models.Model):
 	subject_name = models.ForeignKey(Subject, on_delete=models.CASCADE)
 	issued_on = models.DateTimeField(auto_now_add= True)
 	subject = models.CharField(max_length=100)
-	description = QuillField()
+	description = QuillField(null=True,blank=True)
 	file = models.FileField(storage=PrivateMediaStorage(),upload_to="announcements",null=True,blank=True)
 	announced_by = models.ForeignKey(User,on_delete=models.CASCADE)
 
@@ -63,7 +63,7 @@ class Assignment(models.Model):
 	uploaded_on = models.DateTimeField(auto_now_add= True)
 	file = models.FileField(storage=PrivateMediaStorage(),upload_to="assignments",null=True,blank = True,)
 	topic = models.CharField(max_length=100,)
-	description = QuillField()
+	description = QuillField(null=True,blank=True)
 	submission_date = models.DateTimeField() 
 	assigned_by = models.ForeignKey(User,on_delete=models.CASCADE)
 	submitted_by = models.ManyToManyField(User,related_name="Submissions")

@@ -9,7 +9,7 @@ class Poll(models.Model):
 	choices = [('All Members',"All Members"),('Students','Students')]
 	classroom = models.ForeignKey(Classroom,on_delete= models.CASCADE)
 	file = models.FileField(upload_to="poll/",null=True,blank = True)
-	poll_details = QuillField()
+	poll_details = QuillField(null=True,blank=True)
 	created_by = models.ForeignKey(User,related_name="poll_by",on_delete=models.DO_NOTHING)
 	who_can_vote = models.CharField(choices=choices,max_length=30,default='Students')
 	voters = models. ManyToManyField(User,related_name="voters")

@@ -4,7 +4,6 @@ from basic.models import Classroom
 from imagekit.models import ProcessedImageField
 from guru.storage_back import PrivateMediaStorage
 from imagekit.processors import ResizeToFill
-from django.core.files.storage import FileSystemStorage
 
 class Profile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
