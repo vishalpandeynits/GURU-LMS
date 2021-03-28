@@ -8,11 +8,14 @@ class QuestionForm(forms.ModelForm):
 		model = Poll
 		fields = ['topic','poll_details','who_can_vote',]
 
+	field_order = ['topic', 'who_can_vote', 'announce_at','poll_details']
 
 class PollUpdateForm(forms.ModelForm):
 	class Meta:
 		model = Poll
 		fields = ['topic','poll_details','announce_at']
+
+	field_order = ['topic', 'announce_at','poll_details']
 
 class ChoiceForm(forms.ModelForm):
 	class Meta:

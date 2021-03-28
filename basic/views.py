@@ -272,7 +272,7 @@ def assignments_list(request ,unique_id, subject_id, form=None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
     if member_check(request.user,classroom):
         subject = get_object_or_404(Subject,id=subject_id)
-        assignments = Assignment.objects.filter(subject_name=subject).reverse()
+        assignments = Assignment.objects.filter(subject_name=subject)
         search = request.GET.get('search')
         if search:
             assignments = assignments.filter(Q(topic__icontains=search)|Q(description__icontains=search))
@@ -440,7 +440,7 @@ def announcements_list(request, unique_id, subject_id,form = None):
         subject = get_object_or_404(Subject,id=subject_id)
         admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
         is_teacher = admin_check or request.user==subject.teacher
-        announcements = Announcement.objects.all().filter(subject_name=subject).reverse()
+        announcements = Announcement.objects.all().filter(subject_name=subject)
         if request.GET.get('search'):
             search = request.GET.get('search')
             announcements = announcements.filter(Q(subject__icontains=search)|Q(description__icontains=search))

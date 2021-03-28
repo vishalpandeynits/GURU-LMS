@@ -69,7 +69,7 @@
 	{% endif %}
 	{% if announcements %}
 		<div style="min-height:600px;" >
-			{% for announcement in announcements %}
+			{% for announcement in announcements reversed %}
 			<div class="row">
 				<div class="col-12">
 					<a class="link" href="{% url 'announcement_page' classroom.unique_id subject.id announcement.id %}">
