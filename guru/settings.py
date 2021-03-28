@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'storages',
     'imagekit',
     'notifications',
-    "anymail",
     'honeypot',
 ]
 
@@ -65,7 +64,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS' : True,
+        # 'APP_DIRS' : True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -75,11 +74,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 "basic.context_preprocess.data",
             ],
-            # 'loaders': [
-            # ('django.template.loaders.cached.Loader', [
-            #     'django.template.loaders.filesystem.Loader',
-            #     'django.template.loaders.app_directories.Loader',
-            # ])],
+            'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ])],
         },
     },
 ]
@@ -190,11 +189,7 @@ if PRODUCTION:
     EMAIL_PORT= 587
     EMAIL_USE_TLS= True
     DEFAULT_FROM_EMAIL= config('EMAIL')
-    EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
-    ANYMAIL = {
-        "MAILJET_API_KEY": config('MAILJET_API_KEY'),
-        "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
-    }
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')

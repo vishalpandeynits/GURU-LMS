@@ -2,7 +2,7 @@ from django import forms
 from .models import Bug_report, Classroom, Subject, Note, Announcement, Assignment, Submission
 from django.forms.widgets import NumberInput
 from django.core.exceptions import ValidationError
-
+from django.conf import settings 
 class CreateclassForm(forms.ModelForm):
 	class Meta:
 		model =  Classroom
@@ -23,19 +23,16 @@ class NoteForm(forms.ModelForm):
 		model = Note
 		fields = ['topic','file','description']
 		
-	def clean(self,*args, **kwargs):
-		if 'description' not in self.cleaned_data.keys():
-			print("nhi hai")
-			raise ValidationError('Description must not be less than 20 characters.')
-		return self.cleaned_data
 
 class AssignmentForm(forms.ModelForm):
+	submission_date = forms.DateTimeField(input_formats = settings.DATETIME_INPUT_FORMATS)
 	class Meta:
 		model = Assignment
-		fields = ['topic','full_marks','submission_date','file','description']
+		fields = ['topic','full_marks','file','description']
 		widgets = {
 				'full_marks':NumberInput(attrs={'max-value': '100'})
 			}
+	field_order = ['topic', 'submission_date', 'full_marks','description']
 
 class AnnouncementForm(forms.ModelForm):
 	class Meta:

@@ -26,6 +26,7 @@ def polls(request,unique_id,form=None):
 				datetime_object = datetime.datetime.strptime(request.POST['announce_at'], "%m/%d/%Y %H:%M")
 				choice_list = request.POST.getlist('check')
 				choice_list = list(filter(filter_fun,choice_list))
+				print(form.errors)
 				if form.is_valid():
 					form = form.save(commit=False)
 					form.classroom = classroom
