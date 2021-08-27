@@ -1,4 +1,4 @@
-from basic.models import Classroom
+from apps.basic.models import Classroom
 from rest_framework import permissions
 
 class IsownerorReadOnly(permissions.BasePermission):

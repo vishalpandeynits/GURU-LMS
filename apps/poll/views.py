@@ -4,9 +4,9 @@ from django.urls import reverse
 from django.db.models import *
 from django.contrib import messages
 from django.http import Http404
-from basic.models import *
-from basic.views import member_check
-from basic.utils import *
+from apps.basic.models import *
+from apps.basic.views import member_check
+from apps.basic.utils import *
 from .forms import *
 from .models import *
 from django.utils import timezone

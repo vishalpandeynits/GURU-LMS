@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from basic.models import Classroom
+from apps.basic.models import Classroom
 from django_quill.fields import QuillField
 # Create your models here.
 class Poll(models.Model):

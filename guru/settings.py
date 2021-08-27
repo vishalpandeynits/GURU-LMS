@@ -4,7 +4,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config('SECRET')
-SITE_ID = config('SITE')
+SITE_ID = 6
 ALLOWED_HOSTS = ['*']
 HONEYPOT_FIELD_NAME = config('honeypot_field')
 HONEYPOT_VALUE = config('honeypot_value')
@@ -20,9 +20,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     #myapps
-    'basic.apps.BasicConfig',
-    'users.apps.UsersConfig',
-    'poll.apps.PollConfig',
+    'apps.basic',
+    'apps.users',
+    'apps.poll',
 
     #packages
     'django.contrib.humanize',
@@ -75,7 +75,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',
-                "basic.context_preprocess.data",
+                "apps.basic.context_preprocess.data",
             ],
             'loaders': [
             ('django.template.loaders.cached.Loader', [
@@ -145,6 +145,13 @@ QUILL_CONFIGS = {
     }
 }
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+    }
+}
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
@@ -197,6 +204,8 @@ if PRODUCTION:
         "MAILJET_API_KEY": config('MAILJET_API_KEY'),
         "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
     }
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
@@ -208,34 +217,33 @@ if PRODUCTION:
     }
     AWS_LOCATION = 'media'
     AWS_QUERYSTRING_AUTH=True
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    SITE_NAME = 'https://nits-class.herokuapp.com'
     AWS_PRIVATE_MEDIA_LOCATION = 'private'
     PRIVATE_FILE_STORAGE = 'guru.storage_back.PrivateMediaStorage'
 
     AWS_PUBLIC_MEDIA_LOCATION ='public'
     PUBLIC_FILE_STORAGE = 'guru.storage_back.PublicMediaStorage'
 
-    AWS_S3_REGION_NAME = 'ap-south-1'
-    AWS_S3_SIGNATURE_VERSION = 's3v4'
-    DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME':config('DBNAME'),
-        'USER':config('USER'),
-        'PASSWORD':config('DBPASS'),
-        'PORT':config('DBPORT'),
-        'HOST':config('DBHOST'),
-    }
-}
+    # AWS_S3_REGION_NAME = 'ap-south-1'
+    # AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_ENDPOINT_URL = f'https://fra1.digitaloceanspaces.com'
+#     DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME':config('DBNAME'),
+#         'USER':config('USER'),
+#         'PASSWORD':config('DBPASS'),
+#         'PORT':config('DBPORT'),
+#         'HOST':config('DBHOST'),
+#     }
+# }
 else:
-    MEDIA_URL = 'media/'
+    MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     SITE_NAME = 'http://127.0.0.1:8000'
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
     }
 }

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from basic.models import Classroom
+from apps.basic.models import Classroom
 from imagekit.models import ProcessedImageField
 from guru.storage_back import PrivateMediaStorage
 from imagekit.processors import ResizeToFill

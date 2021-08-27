@@ -5,4 +5,4 @@ class BasicConfig(AppConfig):
     name = 'basic'
 
     def ready(self):
-        import basic.notificate
+        import apps.basic.notificate
