@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from decouple import config
+from django.conf import settings
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config('SECRET')
@@ -18,7 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'django_quill',
     #myapps
     'apps.basic',
     'apps.users',
@@ -27,22 +28,18 @@ INSTALLED_APPS = [
     #packages
     'django.contrib.humanize',
     'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'django_comments',
-    'django_quill',
     'rest_framework',
     'crispy_forms',
     "django_filters",
     'storages',
     'imagekit',
     'notifications',
-    "anymail",
     'honeypot',
-
-    #all auth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -118,7 +115,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = True 
 
 DJANGO_NOTIFICATIONS_CONFIG = { 'USE_JSONFIELD': True}
 
@@ -217,6 +214,8 @@ if PRODUCTION:
     }
     AWS_LOCATION = 'media'
     AWS_QUERYSTRING_AUTH=True
+    DEFAULT_FILE_STORAGE = 'guru.storage_back.PublicMediaStorage'
+    SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
     AWS_PRIVATE_MEDIA_LOCATION = 'private'
     PRIVATE_FILE_STORAGE = 'guru.storage_back.PrivateMediaStorage'
 
@@ -247,3 +246,4 @@ else:
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
     }
 }
+settings.DATETIME_INPUT_FORMATS += ['%d/%m/%Y %H:%M']

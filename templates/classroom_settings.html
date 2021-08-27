@@ -4,6 +4,9 @@
 {% load filters %}
 {% block title %} {{classroom.class_name|upper}}{% endblock %} 
 {% block content %}
+{% load filters %}
+{% load socialaccount %}
+{% get_social_accounts user as accounts %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 {% endblock %}
@@ -78,7 +81,7 @@
                         {% if classroom.need_permission %} checked {% endif %} > 
                         <label for="id_need_permission" style="display:inline-block;" 
                         title="Joiners will need Permisson of admins to join this classroom">
-                        Need permission to join
+                        Private Class
                     </label>
                         <br>
                     {% else %}
@@ -116,7 +119,18 @@
                 <div class="member-card bg-light">
                     <div>
                         <a href="{% url 'profile' member.username %}">
-                            <img height="70" width="70" src="{{member.profile.profile_pic.url}}">
+                            <img height="70" width="70"
+                            {% if accounts %} 
+                                {% if member.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                                    src="{{ member.profile.profile_pic.url }}"
+                                {% elif member.profile.user.socialaccount_set.all.0.get_avatar_url %}
+                                    src="{{ member.profile.user.socialaccount_set.all.0.get_avatar_url }}"
+                                {% else %}
+                                src="{{ member.profile.user.profile.profile_pic.url }}"
+                                {% endif %}
+                            {% else %}
+                                src="{{ member.profile.user.profile.profile_pic.url }}"
+                            {% endif %}>
                         </a>
                     </div>
                     <div>
@@ -139,7 +153,18 @@
             <div style="display:flex;">
                 <div>
                     <a href="{% url 'profile' member.username %}">
-                        <img height="70" width="70" src="{{member.profile.profile_pic.url}}">
+                        <img height="70" width="70"
+                        {% if accounts %} 
+                            {% if member.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                                src="{{ member.profile.profile_pic.url }}"
+                            {% elif member.profile.user.socialaccount_set.all.0.get_avatar_url %}
+                                src="{{ member.profile.user.socialaccount_set.all.0.get_avatar_url }}"
+                            {% else %}
+                            src="{{ member.profile.user.profile.profile_pic.url }}"
+                            {% endif %}
+                        {% else %}
+                            src="{{ member.profile.user.profile.profile_pic.url }}u"
+                        {% endif %}>
                     </a>
                 </div>
                 <div>

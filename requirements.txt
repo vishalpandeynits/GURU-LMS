@@ -7,7 +7,6 @@ humanize==2.6.0
 Pillow==8.1.2
 six==1.15.0
 Jinja2==2.11.1
-django-quill-editor==0.1.22
 python-decouple==3.3
 gunicorn==20.0.4
 whitenoise==5.1.0
@@ -22,3 +21,5 @@ django-notifications-hq==1.6.0
 django-anymail
 django-htmlmin==0.11.0
 django-honeypot==0.9.0
+django-quill-editor==0.1.6
+django-tracking-analyzer

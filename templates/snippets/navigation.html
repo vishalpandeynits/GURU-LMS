@@ -29,7 +29,7 @@
                     <a href="{{ msg.data.url }}">
                         <div class="notifications-item"> 
                                 <div class="text">
-                                    <h4> {{msg.verb}} </h4> bysssssssssssssssssssssss
+                                    <h4> {{msg.verb}} </h4> by
                                     <span>{{msg.actor}}</span> on {{ msg.timestamp }}
                                 </div>
                         </div>
@@ -43,7 +43,7 @@
         <div class="user-icon"  onclick="on_nav(_('dropdown-container'))" >
             <img id="icon" height="50" width="50"
             {% if accounts %} 
-                {% if p_user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
                     src="{{ user.profile.profile_pic.url }}"
                 {% else %}
                     src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
@@ -79,7 +79,7 @@
                     <i class="fas fa-vote-yea mr-2"></i> Polls
                 </a>
                 <a href="{% url 'classroom_page' classroom.unique_id %}">
-                  <i class="fas fa-chalkboard-teacher mr-2"></i>classroom
+                  <i class="fas fa-chalkboard-teacher mr-2"></i>{{ classroom.class_name }} Details
                 </a>
             {% endif %}
 

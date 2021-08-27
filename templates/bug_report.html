@@ -44,7 +44,7 @@
             adding a screenshot may help us address the issue. In return we will
             be thankful to you.(You know we don't have fund now.  &#128540;)
         </p>
-        <form id="bug-form" method="POST" enctype="multipart/form-data">
+        <form id="bug-form" method="POST" enctype="multipart/form-data">{% csrf_token %}
             <h2 class="heading"> Form</h2>
             {{ form|crispy }}<br>
             <input class="btn btn-dark btn-block" type="submit" value="Submit Bug" ><br>

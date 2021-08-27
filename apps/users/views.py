@@ -35,6 +35,7 @@ def signup(request):
             print(send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com' ,[to_email],html_message=message))
             messages.add_message(request,messages.SUCCESS,'An Activation link is sent to your \
                     registrated email id.Please visit your email and activate your account.')
+            # messages.add_message(request,messages.SUCCESS,'Your account is created. You can login into your account.')
             return redirect('home')
     else:
         form = SignUpForm()

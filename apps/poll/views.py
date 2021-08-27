@@ -11,6 +11,7 @@ from .forms import *
 from .models import *
 from django.utils import timezone
 from notifications.signals import notify
+import datetime
 
 @login_required
 def polls(request,unique_id,form=None):
@@ -22,19 +23,22 @@ def polls(request,unique_id,form=None):
 		if admin_check:
 			if request.method=='POST':
 				form = QuestionForm(request.POST or None,request.FILES)
+				datetime_object = datetime.datetime.strptime(request.POST['announce_at'], "%m/%d/%Y %H:%M")
 				choice_list = request.POST.getlist('check')
 				choice_list = list(filter(filter_fun,choice_list))
+				print(form.errors)
 				if form.is_valid():
 					form = form.save(commit=False)
 					form.classroom = classroom
 					form.created_by = request.user
+					form.announce_at = datetime_object
 					form.save()
 					for i in choice_list:
 						choice=Choice()
-						choice.poll = Poll.objects.get(id=form.id)
+						choice.poll = get_object_or_404(Poll,id=form.id)
 						choice.choice_text = i
 						choice.save()
-					verb = f'A poll added in f{classroom.class_name}'
+					verb = f'A poll added/updated in {classroom.class_name}'
 					recipients=User.objects.filter(username__in=classroom.members.values_list('username', flat=True))
 					url = reverse('poll_page',kwargs={'unique_id':classroom.unique_id,'poll_id':form.id})
 					notify.send(sender=request.user,verb=verb,url=url,recipient=recipients)
@@ -68,8 +72,10 @@ def poll_page(request,unique_id, poll_id,form=None):
 		if admin_check:
 			if request.method=='POST':
 				form = PollUpdateForm(request.POST ,request.FILES,instance=poll)
+				datetime_object = datetime.datetime.strptime(request.POST['announce_at'], "%m/%d/%Y %H:%M")
 				if form.is_valid():
 					form = form.save(commit=False)
+					form.announce_at = datetime_object
 					form.save()
 					return redirect(reverse('poll_page',kwargs={'unique_id':classroom.unique_id,'poll_id':poll.id}))
 			else:
@@ -97,10 +103,9 @@ def voting(request,unique_id,poll_id,choice_id):
 	if member_check(request.user,classroom):
 		choice = Choice.objects.filter(poll=poll)
 		if poll.who_can_vote=='Students':
-			members = classroom.members.all()
 			teachers = classroom.teacher.all()
-			students = members.difference(teachers)
-			if request.user not in students:
+			admins = classroom.special_permissions.all()
+			if request.user in admins or request.user in teachers:
 				messages.add_message(request,messages.INFO,f'Only Students are allowed to Vote.')
 				return redirect(url)
 
@@ -109,10 +114,11 @@ def voting(request,unique_id,poll_id,choice_id):
 				messages.add_message(request,messages.INFO,"You have already voted.")
 				return redirect(url)
 			else:
-				choice=Choice.objects.get(id=choice_id)
+				choice=get_object_or_404(Choice,id=choice_id)
 				choice.votes += 1
 				poll.voters.add(request.user)
 				choice.save()
+				messages.add_message(request,messages.SUCCESS,'Your choice is recorded.' )
 				return redirect(request.META['HTTP_REFERER'])
 		else:
 			messages.add_message(request,messages.INFO,"Time's up for voting")

@@ -18,21 +18,17 @@
               <i style="font-size:25px;"class="fas fa-clipboard"></i>
               </button>
         </span>
-        {% if classroom.description %}
-        <p style="overflow:hidden;text-overflow: ellipsis;"> {{ classroom.description }} </p>
-        {% endif %}
+		<center> 
+			<button onclick="on(document.getElementsByClassName('overlay')[0])" id="add-subject-btn"> 
+				Add a subject
+			</button>
+		</center>
     </div>
-	<center> 
-		<button onclick="on(document.getElementsByClassName('overlay')[0])" id="add-subject-btn"> 
-			Add a subject
-		</button>
-	</center>
     {% endif %}
 
 	<div class="container-fluid">
 		{% if is_admin %}
 		<div id="overlay" class="overlay">
-
 			<form class="overlayform" action="{% url 'subjects' classroom.unique_id %}" 
 				method="POST" onsubmit="return validateAddSubject()" enctype="multipart/form-data">
 				<a onclick="off(document.getElementsByClassName('overlay')[0])" id="close"> &times;</a><br>
@@ -58,7 +54,7 @@
 		{% endif %}
 
 		{% if subjects %}
-		<br>
+		<h2 style="font-weight:bolder;"class="text-center">Subjects of {{classroom.class_name}} </h2>
 		<div class="row" style="width:100vw !important;">
 			{% for subject in subjects %}
 			<div class="col-xs-12 col-md-6 col-lg-4">

@@ -6,6 +6,8 @@
 {% endblock %}
 {% block content %}
 <div>
+{% load socialaccount %}
+{% get_social_accounts user as accounts %}
 	{% include 'snippets/navigation.html' %}
 	<div id="home-btn-container">
 		<button onclick="on(document.getElementsByClassName('overlay')[0])" class="btn btn-home">
@@ -15,7 +17,6 @@
 			Join a class 
 		</button>
 	</div>
-
 	<div class="overlay">
         <form method="POST"class="overlayform"enctype="multipart/form-data">
 			{% csrf_token %}
@@ -67,6 +68,7 @@
 	</div>
 
 	{% if classes %} 
+		<h2 style="font-weight:bolder;"class="text-center">My classes </h2>
 		<div class="row px-4">
 			{% for class in classes %}
 				<div class="col-xs-12 col-md-6 col-lg-4">

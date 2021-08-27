@@ -4,7 +4,7 @@
 {% load account %}
 {% load socialaccount %}
 {% load notifications_tags %} 
-
+{% get_social_accounts user as accounts %}
 {% block content %}
 <div class="row">
     <div class="col-2">
@@ -31,7 +31,7 @@
 			   href="{% url 'subject_details' classroom.unique_id subject.id %}"
 			   onclick="closeNav()"> 
 			   <i class="fas fa-chalkboard-teacher mr-2"></i> 
-			   {{ subject.subject_name }}
+			   {{ subject.subject_name }} Details
 			</a>
 			{% if classes %}
 			<h4 style="text-align:center;font-weight: bolder;"> 
@@ -52,9 +52,7 @@
         <span id="openNav" onclick="openNav()">
             &#9776;
         </span>
-        {% if classroom %}
-            <span class="class-name"> {{ classroom.class_name|slice:"0:20" }}</span>
-        {% endif %}
+        <span class="class-name"> {{ subject.subject_name|slice:"0:20" }}</span>
     </div>
     <div class="second-box">  
         {% if user.is_authenticated %}
@@ -87,7 +85,7 @@
         <div class="user-icon"  onclick="on_nav(_('dropdown-container'))" >
             <img id="icon" height="50" width="50"
             {% if accounts %} 
-                {% if p_user.profile.profile_pic|filebasename != 'avatar.jpg' %}
+                {% if user.profile.profile_pic|filebasename != 'avatar.jpg' %}
                     src="{{ user.profile.profile_pic.url }}"
                 {% else %}
                     src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
@@ -96,6 +94,7 @@
                 src="{{ user.profile.profile_pic.url }}"
             {% endif %}
             >
+        </div>
         </div>
         <div id="dropdown-container" style="flex-direction: column;"class="bg-dark float-right text-dark">
             <a class="text-light d-block" href="{% url 'profile' user.username %}">
