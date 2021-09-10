@@ -332,7 +332,7 @@ def assignment_details(request,unique_id,subject_id,id):
             if request.method=="POST":
                 if assignment.submission_link:
                     form = SubmitAssignmentForm(request.POST, request.FILES,instance=submission_object)
-                    if(submission_object.marks_assigned):
+                    if(submission_object and submission_object.marks_assigned):
                         messages.add_message(request,messages.WARNING, 'Your assignment is checked, You can\'t change it now')
                         return redirect(request.META['HTTP_REFERER'])
                     if form.is_valid():
