@@ -1,11 +1,11 @@
 from apps.classroom.models import Classroom
 
-def data(request,params={}):
+def data(request, params={}):
     user = request.user
     if user.is_authenticated:
-        my_classes = Classroom.objects.all().filter(members=user).reverse()
+        my_classes = Classroom.objects.filter(members=user).reverse()
         read = user.notifications.read()
-        params ={
+        params = {
             'classes':my_classes,
             'read':read
         }

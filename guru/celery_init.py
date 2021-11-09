@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guru.settings')
 
 from django.conf import settings  # noqa
 
-app = Celery('guru')
+app = Celery('guru', broker=settings.CELERY_BROKER_URL, backend=settings.CELERY_RESULT_BACKEND)
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

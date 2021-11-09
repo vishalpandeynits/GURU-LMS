@@ -1,20 +1,26 @@
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.conf import settings
+from guru import celery_app as app
+from apps.resource.models import Note
 
-def note_email(note):
+@app.task(bind= True)
+def note_email(self, note_id):
+	note = Note.objects.get(id = note_id)
 	message = render_to_string('emails/note_add_email.html', {
 		'note':note,
 		'subject_name':note.subject_name,
 		'classroom':note.subject_name.classroom,
 		'site_name':settings.SITE_NAME
-	})
+	}
+	)
 	mail_subject = 'A new note is added.'
 	all_members = note.subject_name.classroom.members.values_list('email', flat=True)
 	teachers = note.subject_name.classroom.teacher.values_list('email',flat=True)
 	to_email = all_members.difference(teachers)
 	send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com',to_email,html_message=message)
 
+@app.task(bind=True)
 def assignment_email(assignment):
 	message = render_to_string('emails/assignment_add_email.html', {
 		'assignment':assignment,
@@ -27,6 +33,7 @@ def assignment_email(assignment):
 	to_email = all_members.difference(teachers)
 	send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com',to_email,html_message=message)
 
+@app.task(bind=True)
 def announcement_email(announcement):
 	message = render_to_string('emails/announcement_add_email.html', {
 		'announcement':announcement,
@@ -37,6 +44,7 @@ def announcement_email(announcement):
 	to_email = announcement.subject_name.classroom.members.values_list('email', flat=True)
 	send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com',to_email,html_message=message)
 
+@app.task(bind=True)
 def email_marks(request,submission,assignment):
 	message = render_to_string('emails/submission_mark.html', {
 		'user':request.user,
@@ -48,6 +56,7 @@ def email_marks(request,submission,assignment):
 	to_email = submission.submitted_by.email
 	send_mail(mail_subject, message,'guru.online.classroom.portal@gmail.com',[to_email],html_message=message)	
 
+@app.task(bind=True)
 def send_reminder(request,assignment,emails):
 	message = render_to_string('emails/send_reminder.html',{
 			'user':request.user,
