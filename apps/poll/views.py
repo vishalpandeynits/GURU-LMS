@@ -5,8 +5,7 @@ from django.db.models import *
 from django.contrib import messages
 from django.http import Http404
 from apps.basic.models import *
-from apps.basic.views import members_only
-from apps.basic.utils import *
+from apps.utils import members_only
 from .forms import *
 from .models import *
 from django.utils import timezone

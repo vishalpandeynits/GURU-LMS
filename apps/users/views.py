@@ -13,7 +13,7 @@ from .models import Profile
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
-from apps.basic.models import Classroom
+from apps.classroom.models import Classroom
 from django.contrib.auth.decorators import login_required
 
 def signup(request):

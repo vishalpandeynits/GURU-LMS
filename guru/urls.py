@@ -8,14 +8,21 @@ import notifications.urls
 from decouple import config
 
 urlpatterns = [
-    path('AKIAUMKLYNQMHJ3N2H7Q/', admin.site.urls),
+    path('admin/', admin.site.urls),
+    
     path('', include('apps.basic.urls')),
-    path('accounts/',include('django.contrib.auth.urls')),
     path('polls/',include('apps.poll.urls')),
     path('profile/',include('apps.users.urls')),
-    path('comments/', include('django_comments.urls')),
-    path('accounts/', include('allauth.urls')),
+    path('assignment/', include('apps.assignment.urls')),
+    path('announcement/', include('apps.announcement.urls')),
+    path('resources/', include('apps.resource.urls')),
+    path('classroom/', include('apps.classroom.urls')),
+    path('subject/', include('apps.subject.urls')),
+
+    path('accounts/',include('django.contrib.auth.urls')),
     path('rest/',include('rest_framework.urls')),
+    path('accounts/', include('allauth.urls')),
+    path('comments/', include('django_comments.urls')),
     path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
     path('accounts/password_reset/', views.PasswordResetView.as_view(
     html_email_template_name='registration/password_reset_html_email.html',
@@ -25,7 +32,6 @@ urlpatterns = [
         authentication_form=UserLoginForm),name='login'
     ),
 ]
-if config('DEBUG') == 'DEVELOPMENT':
-    urlpatterns += [path('admin/', admin.site.urls)]
 
-urlpatterns  += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if config('DEBUG', bool) == True:
+    urlpatterns  += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

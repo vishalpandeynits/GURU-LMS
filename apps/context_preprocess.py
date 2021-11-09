@@ -1,5 +1,5 @@
-from .models import Classroom
-from django.conf import settings
+from apps.classroom.models import Classroom
+
 def data(request,params={}):
     user = request.user
     if user.is_authenticated:

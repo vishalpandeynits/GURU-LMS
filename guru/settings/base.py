@@ -1,36 +1,24 @@
 from pathlib import Path
-SITE_ID = 6
 import os
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
-
 SECRET_KEY = config('SECRET')
-
 ALLOWED_HOSTS = ['*']
-HONEYPOT_FIELD_NAME = config('honeypot_field')
-HONEYPOT_VALUE = config('honeypot_value')
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-# DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = True
-HTML_MINIFY = not DEBUG
-
-INSTALLED_APPS = [
+INBUILT_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_quill',
-    #myapps
-    'apps.basic',
-    'apps.users',
-    'apps.poll',
-
-    #packages
     'django.contrib.humanize',
     'django.contrib.sites',
+]
+
+THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -42,8 +30,22 @@ INSTALLED_APPS = [
     'storages',
     'imagekit',
     'notifications',
-    'honeypot',
+    
+    'django_quill',
 ]
+
+GURU_APPS = [
+    'apps.assignment',
+    'apps.announcement',
+    'apps.basic',
+    'apps.classroom',
+    'apps.subject',
+    'apps.users',
+    'apps.poll',
+    'apps.resource'
+]
+
+INSTALLED_APPS = INBUILT_APPS + THIRD_PARTY_APPS + GURU_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,10 +57,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'htmlmin.middleware.HtmlMinifyMiddleware',
-    'htmlmin.middleware.MarkRequestMiddleware',
-    'honeypot.middleware.HoneypotResponseMiddleware',
-    'honeypot.middleware.HoneypotViewMiddleware',
 ]
 
 ROOT_URLCONF = 'guru.urls'
@@ -75,7 +73,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',
-                "apps.basic.context_preprocess.data",
+                "apps.context_preprocess.data",
             ],
             # 'loaders': [
             # ('django.template.loaders.cached.Loader', [
@@ -149,14 +147,10 @@ QUILL_CONFIGS = {
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = (
-  # Put strings here, like "/home/html/static" or "C:/www/django/static".
-  # Always use forward slashes, even on Windows.
-  # Don't forget to use absolute paths, not relative paths.
   BASE_DIR/"static",
 )
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-LOGIN_REDIRECT_URL ='/homepage/'
+LOGIN_REDIRECT_URL ='/classroom/homepage/'
 LOGOUT_REDIRECT_URL = '/'
 
 #all-auth registraion settings
@@ -207,3 +201,17 @@ if DEBUG:
     from .local import *
 else:
     from .prod import *
+
+    MIDDLEWARE += [
+    'htmlmin.middleware.HtmlMinifyMiddleware',
+    'htmlmin.middleware.MarkRequestMiddleware',
+    'honeypot.middleware.HoneypotResponseMiddleware',
+    'honeypot.middleware.HoneypotViewMiddleware',
+    ]
+
+    INSTALLED_APPS += [
+        'honeypot',
+    ]
+
+    HONEYPOT_FIELD_NAME = config('honeypot_field')
+    HONEYPOT_VALUE = config('honeypot_value')

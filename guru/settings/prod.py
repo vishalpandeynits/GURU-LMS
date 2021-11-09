@@ -1,5 +1,6 @@
 from decouple import config
 
+SITE_ID = config('SITE_ID_PRODUCTION')
 EMAIL_HOST= "smtp.gmail.com"
 EMAIL_HOST_USER= config('EMAIL')
 EMAIL_HOST_PASSWORD= config('PASSWORD')
@@ -12,7 +13,7 @@ ANYMAIL = {
     "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
 }
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
+SITE_NAME = config('SITE_NAME')
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
@@ -25,7 +26,6 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_LOCATION = 'media'
 AWS_QUERYSTRING_AUTH=True
 DEFAULT_FILE_STORAGE = 'guru.storage_back.PublicMediaStorage'
-SITE_NAME = 'https://guru-lms-8fgu5.ondigitalocean.app'
 AWS_PRIVATE_MEDIA_LOCATION = 'private'
 PRIVATE_FILE_STORAGE = 'guru.storage_back.PrivateMediaStorage'
 
@@ -45,3 +45,4 @@ DATABASES = {
         'HOST':config('DBHOST'),
     }
 }
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
