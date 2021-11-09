@@ -13,39 +13,42 @@ from django.urls import reverse
 import xlwt,datetime 
 from notifications.signals import notify
 from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import cache
 
-@csrf_exempt #checked
+@csrf_exempt
 def home(request): 
     """Landing Page"""
     if request.user.is_authenticated:
         return redirect(reverse('homepage'))
-    else:
-        if request.method=='POST':
-            name=request.POST.get('name')
-            email = request.POST.get('email')
-            message =f"{name} \n {email} \n {request.POST.get('message')} "
-            mail_subject = 'Contact us : Sent by ' + name 
-            if(send_mail(mail_subject,message,'guru.online.classroom.portal@gmail.com',['guru.online.classroom.portal@gmail.com'])):
-                messages.add_message(request,messages.SUCCESS,'Your message sent successfully.')
-            else:
-                messages.add_message(request,messages.ERROR,"An Error while sending your message.\
-                    Please try again or contact using given contact details.")
+
+    if request.method=='POST': # celery email
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message =f"{name} \n {email} \n {request.POST.get('message')} "
+        mail_subject = 'Contact us : Sent by ' + name 
+        if(send_mail(mail_subject,message,'guru.online.classroom.portal@gmail.com',['guru.online.classroom.portal@gmail.com'])):
+            messages.add_message(request,messages.SUCCESS,'Your message sent successfully.')
+        else:
+            messages.add_message(request,messages.ERROR,"An Error while sending your message.\
+                Please try again or contact using given contact details.")
     return render(request,'intro.html')
     
-@login_required#checked
+@login_required
 def homepage(request):
     """
-    Create a classroom, Join A classroom, 
+    Create a classroom and joins a classroom.
     """
     user = request.user
     if request.POST.get('join_key'):
         join_key = request.POST.get('join_key')
+        
         try:
-            classroom = get_object_or_404(Classroom,unique_id=join_key)
+            classroom = get_object_or_404(Classroom, unique_id=join_key)
         except Classroom.DoesNotExist:
             messages.add_message(request, messages.WARNING,"No such classroom exists.")
             return redirect(reverse('homepage'))
-        if classroom.members.all().filter(username=user.username).exists():
+
+        if classroom.members.filter(username=user.username).exists():
             messages.add_message(request, messages.INFO,"You are already member of this class.")
             return redirect(reverse('homepage'))
 
@@ -112,148 +115,147 @@ def admin_status(request,unique_id,username):
     else:
         raise Http404()
 
-@login_required#checked
+
+@members_only
 def classroom_page(request,unique_id):
     """
     Classroom Setting Page.
     """
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user, classroom):
-        pending_members = classroom.pending_members.all()
-        admins = classroom.special_permissions.all()
-        members =  admins | classroom.members.all()
-        is_admin = classroom.special_permissions.filter(username = request.user.username).exists()
-        #classroom_update
-        if request.method=="POST":
-            form = CreateclassForm(request.POST,request.FILES,instance=classroom)
-            if form.is_valid():
-                form.save()
-                return redirect(reverse('subjects',kwargs={'unique_id':classroom.unique_id}))
-        else:
-            form = CreateclassForm(instance=classroom)
-        params={
-            'members':members.distinct(),
-            'admins':admins,
-            'pending_members':pending_members,
-            'classroom':classroom,
-            'is_admin':is_admin,
-            'form':form,
-        }
-        return render(request,'classroom_settings.html',params)
+    pending_members = classroom.pending_members.all()
+    admins = classroom.special_permissions.all()
+    members =  admins | classroom.members.all()
+    is_admin = classroom.special_permissions.filter(username = request.user.username).exists()
+    #classroom_update
+    if request.method=="POST":
+        form = CreateclassForm(request.POST,request.FILES,instance=classroom)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('subjects',kwargs={'unique_id':classroom.unique_id}))
+    else:
+        form = CreateclassForm(instance=classroom)
+    params={
+        'members':members.distinct(),
+        'admins':admins,
+        'pending_members':pending_members,
+        'classroom':classroom,
+        'is_admin':is_admin,
+        'form':form,
+    }
+    return render(request,'classroom_settings.html',params)
 
-@login_required#checked
+@members_only
 def subjects(request, unique_id,form=None):
     """ 
     Enlists all the subjects of a classroom ,
     subjects can be added by admins
     """
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user,classroom):
-        #querysets
-        members = classroom.members.all()
-        subjects = Subject.objects.filter(classroom=classroom)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        # Admins can add a subject and assign a teacher to it
-        if admin_check and request.method=="POST":
-            form = SubjectForm(request.POST)
-            teacher = get_object_or_404(User,username=request.POST.get('teacher'))
-            if form.is_valid():
-                subject=form.save(commit=False)
-                subject.classroom=classroom
-                subject.teacher = teacher
-                subject.save()
-                subject.upload_permission.add(teacher)
-                recipients=User.objects.filter(username__in=classroom.members.values_list('username', flat=True))
-                url = reverse('subjects',kwargs={'unique_id':classroom.unique_id})
-                notify.send(sender=request.user,verb=f"subject {subject.subject_name} added in {classroom.class_name}",
-                recipient=recipients,url=url)
-                messages.add_message(request,messages.INFO,f"A new Subject {subject.subject_name} added")
-                classroom.teacher.add(teacher)
-                return redirect(url)
-            else:
-                form = SubjectForm()
-        params = {
-            'subjects':subjects,
-            'form':form,
-            'classroom':classroom,
-            'is_admin':admin_check,
-            'members':members
-            }
-        return render(request,'subjects_list.html',params)
+    #querysets
+    members = classroom.members.all()
+    subjects = Subject.objects.filter(classroom=classroom)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    # Admins can add a subject and assign a teacher to it
+    if admin_check and request.method=="POST":
+        form = SubjectForm(request.POST)
+        teacher = get_object_or_404(User,username=request.POST.get('teacher'))
+        if form.is_valid():
+            subject=form.save(commit=False)
+            subject.classroom=classroom
+            subject.teacher = teacher
+            subject.save()
+            subject.upload_permission.add(teacher)
+            recipients=User.objects.filter(username__in=classroom.members.values_list('username', flat=True))
+            url = reverse('subjects',kwargs={'unique_id':classroom.unique_id})
+            notify.send(sender=request.user,verb=f"subject {subject.subject_name} added in {classroom.class_name}",
+            recipient=recipients,url=url)
+            messages.add_message(request,messages.INFO,f"A new Subject {subject.subject_name} added")
+            classroom.teacher.add(teacher)
+            return redirect(url)
+        else:
+            form = SubjectForm()
+    params = {
+        'subjects':subjects,
+        'form':form,
+        'classroom':classroom,
+        'is_admin':admin_check,
+        'members':members
+        }
+    return render(request,'subjects_list.html',params)
 
+@members_only
 @login_required#checked
 def notes_list(request,unique_id,subject_id,form = None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user,classroom):
-        #querysets
-        subject = get_object_or_404(Subject,id=subject_id)
-        notes = Note.objects.filter(subject_name=subject).order_by('-id')
-        if request.GET.get('search'):
-            search = request.GET.get('search')
-            notes = notes.filter(Q(topic__icontains=search)|Q(description__icontains=search)) 
-        query,page_range = pagination(request, notes)
-        upload_permission = subject.upload_permission.all().filter(username=request.user.username).exists()
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or upload_permission or request.user==subject.teacher  
-        #Add note form handling
-        if is_teacher:
-            if request.method=="POST":
-                form = NoteForm(request.POST,request.FILES)
-                if form.is_valid:
-                    data=form.save(commit=False)
-                    data.subject_name = subject
-                    data.uploaded_by = request.user
-                    data.save()
-                    messages.add_message(request,messages.SUCCESS,f"Your Note {data.topic} is added")
-                    return redirect(reverse('resources',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
-            else:
-                form= NoteForm()
+    #querysets
+    subject = get_object_or_404(Subject,id=subject_id)
+    notes = Note.objects.filter(subject_name=subject).order_by('-id')
+    if request.GET.get('search'):
+        search = request.GET.get('search')
+        notes = notes.filter(Q(topic__icontains=search)|Q(description__icontains=search)) 
+    query,page_range = pagination(request, notes)
+    upload_permission = subject.upload_permission.all().filter(username=request.user.username).exists()
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or upload_permission or request.user==subject.teacher  
+    #Add note form handling
+    if is_teacher:
+        if request.method=="POST":
+            form = NoteForm(request.POST,request.FILES)
+            if form.is_valid:
+                data=form.save(commit=False)
+                data.subject_name = subject
+                data.uploaded_by = request.user
+                data.save()
+                messages.add_message(request,messages.SUCCESS,f"Your Note {data.topic} is added")
+                return redirect(reverse('resources',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
+        else:
+            form= NoteForm()
 
-        params={
-            'form':form,
-            'subject':subject,
-            'classroom':classroom,
-            'notes':notes,
-            'page':query,
-            'page_range':page_range,
-            'is_teacher':is_teacher,
-            }
-        return render(request,'notes/notes_list.html',params)
+    params={
+        'form':form,
+        'subject':subject,
+        'classroom':classroom,
+        'notes':notes,
+        'page':query,
+        'page_range':page_range,
+        'is_teacher':is_teacher,
+        }
+    return render(request,'notes/notes_list.html',params)
 
-@login_required#checked
+@members_only
+@login_required
 def note_details(request, unique_id, subject_id, id, form = None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user,classroom):
-        #queryset
-        subject = get_object_or_404(Subject,id=subject_id) 
-        note = get_object_or_404(Note,id=id)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or request.user==subject.teacher or note.uploaded_by == request.user
+    #queryset
+    subject = get_object_or_404(Subject,id=subject_id) 
+    note = get_object_or_404(Note,id=id)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or request.user==subject.teacher or note.uploaded_by == request.user
 
-        if is_teacher:
-            if request.method=="POST": 
-                form = NoteForm(request.POST,request.FILES,instance=note)
-                if form.is_valid():
-                    form.file = request.POST.get('file')
-                    form.save()
-                    return redirect(reverse('read_note',kwargs={
-                        'unique_id':classroom.unique_id,
-                        'subject_id':subject.id,
-                        'id':note.id
-                        }))
-            else:
-                form= NoteForm(instance=note)
-        params={
-                'subject':subject,
-                'updateform':form,
-                'note':note,
-                'classroom':classroom,
-                'is_teacher': is_teacher,
-                'extension':extension_type(note.file)
-            }
-        return render(request,'notes/note_detail.html',params)
+    if is_teacher:
+        if request.method=="POST": 
+            form = NoteForm(request.POST,request.FILES,instance=note)
+            if form.is_valid():
+                form.file = request.POST.get('file')
+                form.save()
+                return redirect(reverse('read_note',kwargs={
+                    'unique_id':classroom.unique_id,
+                    'subject_id':subject.id,
+                    'id':note.id
+                    }))
+        else:
+            form= NoteForm(instance=note)
+    params={
+            'subject':subject,
+            'updateform':form,
+            'note':note,
+            'classroom':classroom,
+            'is_teacher': is_teacher,
+            'extension':extension_type(note.file)
+        }
+    return render(request,'notes/note_detail.html',params)
 
-@login_required#checked
+@login_required
 def note_delete(request,unique_id,subject_id,id):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
     subject = get_object_or_404(Subject,id=subject_id)
@@ -267,99 +269,99 @@ def note_delete(request,unique_id,subject_id,id):
     else:
         raise Http404()
 
+@members_only
 @login_required#checked
 def assignments_list(request ,unique_id, subject_id, form=None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user,classroom):
-        subject = get_object_or_404(Subject,id=subject_id)
-        assignments = Assignment.objects.filter(subject_name=subject)
-        search = request.GET.get('search')
-        if search:
-            assignments = assignments.filter(Q(topic__icontains=search)|Q(description__icontains=search))
-        query,page_range = pagination(request,assignments)
-        assignments=query.object_list
+    subject = get_object_or_404(Subject,id=subject_id)
+    assignments = Assignment.objects.filter(subject_name=subject)
+    search = request.GET.get('search')
+    if search:
+        assignments = assignments.filter(Q(topic__icontains=search)|Q(description__icontains=search))
+    query,page_range = pagination(request,assignments)
+    assignments=query.object_list
 
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or subject.teacher==request.user
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or subject.teacher==request.user
 
-        if is_teacher:
-            if request.method=="POST":
-                form = AssignmentForm(request.POST,request.FILES)
-                datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
-                if form.is_valid():
-                    assignment = form.save(commit=False)
-                    assignment.submission_date = datetime_object
-                    assignment.subject_name = subject
-                    assignment.assigned_by = request.user
-                    assignment.save()
-                    return redirect(request.META['HTTP_REFERER'])
-            else:
-                form= AssignmentForm()
+    if is_teacher:
+        if request.method=="POST":
+            form = AssignmentForm(request.POST,request.FILES)
+            datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
+            if form.is_valid():
+                assignment = form.save(commit=False)
+                assignment.submission_date = datetime_object
+                assignment.subject_name = subject
+                assignment.assigned_by = request.user
+                assignment.save()
+                return redirect(request.META['HTTP_REFERER'])
+        else:
+            form= AssignmentForm()
 
-        params={
-            'form':form,
-            'subject':subject,
-            'classroom':classroom,
-            'assignments':assignments,
-            'page':query,
-            'page_range':page_range,
-            }
-        return render(request,'assignments/assignment_list.html',params)
+    params={
+        'form':form,
+        'subject':subject,
+        'classroom':classroom,
+        'assignments':assignments,
+        'page':query,
+        'page_range':page_range,
+        }
+    return render(request,'assignments/assignment_list.html',params)
 
+@members_only
 @login_required#checked
 def assignment_details(request,unique_id,subject_id,id):
     updateform = form  = submission = submission_object = None
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user, classroom):
-        subject = get_object_or_404(Subject,id=subject_id)
-        assignment = get_object_or_404(Assignment,id=id)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or request.user==subject.teacher
-        if is_teacher:
-            if request.method=="POST":
-                updateform = AssignmentForm(request.POST,request.FILES,instance=assignment)
-                datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
-                if updateform.is_valid():
-                    form = updateform.save(commit=False)
-                    form.submission_date = datetime_object
-                    form.save()
+    subject = get_object_or_404(Subject,id=subject_id)
+    assignment = get_object_or_404(Assignment,id=id)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or request.user==subject.teacher
+    if is_teacher:
+        if request.method=="POST":
+            updateform = AssignmentForm(request.POST,request.FILES,instance=assignment)
+            datetime_object = datetime.datetime.strptime(request.POST['submission_date'], "%m/%d/%Y %H:%M")
+            if updateform.is_valid():
+                form = updateform.save(commit=False)
+                form.submission_date = datetime_object
+                form.save()
+                return redirect(request.META['HTTP_REFERER'])
+        else:
+            updateform= AssignmentForm(instance=assignment)
+    #submitting assignment
+    else: 
+        submission_object = Submission.objects.filter(Q(submitted_by=request.user) & Q(assignment=assignment)).first()
+        if request.method=="POST":
+            if assignment.submission_link:
+                form = SubmitAssignmentForm(request.POST, request.FILES,instance=submission_object)
+                if(submission_object and submission_object.marks_assigned):
+                    messages.add_message(request,messages.WARNING, 'Your assignment is checked, You can\'t change it now')
+                    return redirect(request.META['HTTP_REFERER'])
+                if form.is_valid():
+                    data=form.save(commit=False)
+                    data.submitted_by=request.user
+                    data.assignment= assignment
+                    data.save()
+                    assignment.submitted_by.add(request.user)
                     return redirect(request.META['HTTP_REFERER'])
             else:
-                updateform= AssignmentForm(instance=assignment)
-        #submitting assignment
-        else: 
-            submission_object = Submission.objects.filter(Q(submitted_by=request.user) & Q(assignment=assignment)).first()
-            if request.method=="POST":
-                if assignment.submission_link:
-                    form = SubmitAssignmentForm(request.POST, request.FILES,instance=submission_object)
-                    if(submission_object and submission_object.marks_assigned):
-                        messages.add_message(request,messages.WARNING, 'Your assignment is checked, You can\'t change it now')
-                        return redirect(request.META['HTTP_REFERER'])
-                    if form.is_valid():
-                        data=form.save(commit=False)
-                        data.submitted_by=request.user
-                        data.assignment= assignment
-                        data.save()
-                        assignment.submitted_by.add(request.user)
-                        return redirect(request.META['HTTP_REFERER'])
-                else:
-                    messages.add_message(request,messages.WARNING,"Submission link is closed.")
-            else:
-                form = SubmitAssignmentForm(instance=submission_object)
-        
-        params={
-            'assignment':assignment,
-            'extension':extension_type(assignment.file),
-            'subject':subject,
-            'form':form,
-            'updateform':updateform,
-            'classroom':classroom,
-            'submissionform':form,
-            'submission':submission,
-            'submission_object':submission_object,
-            'is_teacher':is_teacher,
-            }       
-        return render(request,'assignments/assignment_detail.html',params)
+                messages.add_message(request,messages.WARNING,"Submission link is closed.")
+        else:
+            form = SubmitAssignmentForm(instance=submission_object)
+    
+    params={
+        'assignment':assignment,
+        'extension':extension_type(assignment.file),
+        'subject':subject,
+        'form':form,
+        'updateform':updateform,
+        'classroom':classroom,
+        'submissionform':form,
+        'submission':submission,
+        'submission_object':submission_object,
+        'is_teacher':is_teacher,
+        }       
+    return render(request,'assignments/assignment_detail.html',params)
 
 @login_required#checked
 def assignment_handle(request,unique_id,subject_id,id):
@@ -433,78 +435,78 @@ def assignment_delete(request,unique_id,subject_id,id):
     else:
         raise Http404()
 
+@members_only
 @login_required#checked
 def announcements_list(request, unique_id, subject_id,form = None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user, classroom):
-        #querysets
-        subject = get_object_or_404(Subject,id=subject_id)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or request.user==subject.teacher
-        announcements = Announcement.objects.all().filter(subject_name=subject)
-        if request.GET.get('search'):
-            search = request.GET.get('search')
-            announcements = announcements.filter(Q(subject__icontains=search)|Q(description__icontains=search))
-        query,page_range = pagination(request,announcements)
-        announcements=query.object_list
+    #querysets
+    subject = get_object_or_404(Subject,id=subject_id)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or request.user==subject.teacher
+    announcements = Announcement.objects.all().filter(subject_name=subject)
+    if request.GET.get('search'):
+        search = request.GET.get('search')
+        announcements = announcements.filter(Q(subject__icontains=search)|Q(description__icontains=search))
+    query,page_range = pagination(request,announcements)
+    announcements=query.object_list
 
-        #announcement form handling
-        if is_teacher:
-            if request.method=="POST":
-                form = AnnouncementForm(request.POST,request.FILES)
-                if form.is_valid():
-                    announcement = form.save(commit=False)
-                    announcement.subject_name = subject
-                    announcement.announced_by = request.user
-                    announcement.save()
-                    return redirect(reverse('announcement',kwargs=
-                        {'unique_id':classroom.unique_id,'subject_id':subject.id}))
-            else:
-                form= AnnouncementForm()
-        params={
-                'form':form,
-                'subject':subject,
-                'classroom':classroom,
-                'announcements':announcements,
-                'page':query,
-                'page_range':page_range,
-                'is_teacher':is_teacher
-            }
-        return render(request,'announcements/announcement_list.html',params)
+    #announcement form handling
+    if is_teacher:
+        if request.method=="POST":
+            form = AnnouncementForm(request.POST,request.FILES)
+            if form.is_valid():
+                announcement = form.save(commit=False)
+                announcement.subject_name = subject
+                announcement.announced_by = request.user
+                announcement.save()
+                return redirect(reverse('announcement',kwargs=
+                    {'unique_id':classroom.unique_id,'subject_id':subject.id}))
+        else:
+            form= AnnouncementForm()
+    params={
+            'form':form,
+            'subject':subject,
+            'classroom':classroom,
+            'announcements':announcements,
+            'page':query,
+            'page_range':page_range,
+            'is_teacher':is_teacher
+        }
+    return render(request,'announcements/announcement_list.html',params)
 
+@members_only
 @login_required#checked
 def announcement_details(request,unique_id,subject_id,id,form = None):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user, classroom):
-        subject = get_object_or_404(Subject,id=subject_id)
-        announcement = get_object_or_404(Announcement,id=id)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        is_teacher = admin_check or request.user==subject.teacher
+    subject = get_object_or_404(Subject,id=subject_id)
+    announcement = get_object_or_404(Announcement,id=id)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    is_teacher = admin_check or request.user==subject.teacher
 
-        #announcement update handling
-        if is_teacher:
-            if request.method=="POST":
-                form = AnnouncementForm(request.POST,request.FILES,instance=announcement)
-                if form.is_valid():
-                    announcementform = form.save(commit=False)
-                    announcementform.subject_name = subject
-                    announcementform.save()
-                    return redirect(reverse('announcement_page',kwargs={
-                        'unique_id':classroom.unique_id,
-                        'subject_id':subject.id,
-                        'id':announcement.id
-                        }))
-            else:
-                form= AnnouncementForm(instance=announcement)
-        params={
-            'announcement':announcement,
-            'extension':extension_type(announcement.file),
-            'subject':subject,
-            'updateform':form,
-            'classroom':classroom,
-            'is_teacher':is_teacher,
-            }
-        return render(request,'announcements/announcement_details.html',params)
+    #announcement update handling
+    if is_teacher:
+        if request.method=="POST":
+            form = AnnouncementForm(request.POST,request.FILES,instance=announcement)
+            if form.is_valid():
+                announcementform = form.save(commit=False)
+                announcementform.subject_name = subject
+                announcementform.save()
+                return redirect(reverse('announcement_page',kwargs={
+                    'unique_id':classroom.unique_id,
+                    'subject_id':subject.id,
+                    'id':announcement.id
+                    }))
+        else:
+            form= AnnouncementForm(instance=announcement)
+    params={
+        'announcement':announcement,
+        'extension':extension_type(announcement.file),
+        'subject':subject,
+        'updateform':form,
+        'classroom':classroom,
+        'is_teacher':is_teacher,
+        }
+    return render(request,'announcements/announcement_details.html',params)
 
 @login_required #checked
 def announcement_delete(request,unique_id,subject_id,id):
@@ -524,44 +526,44 @@ def announcement_delete(request,unique_id,subject_id,id):
     else:
         raise Http404()
 
+@members_only
 @login_required #checked
 def subject_details(request,unique_id, subject_id):
     classroom = get_object_or_404(Classroom,unique_id=unique_id)
-    if member_check(request.user, classroom):
-        subject = get_object_or_404(Subject,id=subject_id)
-        admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
-        upload_permission = subject.upload_permission.all()
-        members = classroom.members.all()
-        admins = classroom.special_permissions.all()
-        teachers = classroom.teacher.all()
-        teacher = subject.teacher
-        members = list((admins| members.difference(teachers)).distinct())
-        if teacher not in members:
-            members.append(teacher)
+    subject = get_object_or_404(Subject,id=subject_id)
+    admin_check = classroom.special_permissions.filter(username = request.user.username).exists()
+    upload_permission = subject.upload_permission.all()
+    members = classroom.members.all()
+    admins = classroom.special_permissions.all()
+    teachers = classroom.teacher.all()
+    teacher = subject.teacher
+    members = list((admins| members.difference(teachers)).distinct())
+    if teacher not in members:
+        members.append(teacher)
 
-        activities = Subject_activity.objects.filter(subject=subject).reverse()
-        query,page_range = pagination(request,activities)
-        activities=query.object_list
+    activities = Subject_activity.objects.filter(subject=subject).reverse()
+    query,page_range = pagination(request,activities)
+    activities=query.object_list
 
-        if request.method=='POST':
-            form = SubjectEditForm(request.POST , request.FILES,instance=subject)
-            if form.is_valid():
-                form.save()
-        else:
-            form = SubjectEditForm(instance=subject)
-        params={
-            'subject':subject,
-            'classroom':classroom, 
-            'is_teacher':admin_check,
-            'members':members,
-            'upload_permissions':upload_permission,
-            'admins':admins,
-            'teacher':teacher,
-            'page':query,
-            'page_range':page_range,
-            'form':form
-         }
-        return render(request,'subject_details.html',params)
+    if request.method=='POST':
+        form = SubjectEditForm(request.POST , request.FILES,instance=subject)
+        if form.is_valid():
+            form.save()
+    else:
+        form = SubjectEditForm(instance=subject)
+    params={
+        'subject':subject,
+        'classroom':classroom, 
+        'is_teacher':admin_check,
+        'members':members,
+        'upload_permissions':upload_permission,
+        'admins':admins,
+        'teacher':teacher,
+        'page':query,
+        'page_range':page_range,
+        'form':form
+        }
+    return render(request,'subject_details.html',params)
 
 @login_required #checked
 def delete_subject(request,unique_id, subject_id):
@@ -627,23 +629,23 @@ def delete_request(request,unique_id,username):
         notify.send(sender=request.user,verb=verb,recipient=user,url=url)
         return redirect(reverse('classroom_page',kwargs={'unique_id':classroom.unique_id}))
 
+@members_only
 @login_required #checked
 def manage_upload_permission(request,unique_id,subject_id,username):
     classroom = Classroom.objects.get(unique_id=unique_id)  
-    if member_check(request.user,classroom):
-        user = User.objects.get(username=username)
-        subject = get_object_or_404(Subject,id=subject_id)
-        check = subject.upload_permission.filter(username = user.username).exists()
-        url = reverse('subjects',kwargs={'unique_id':classroom.unique_id})
-        if check:
-            verb = f"You can't upload notes in {subject.subject_name} of {classroom.class_name} anymore"
-            notify.send(sender=request.user,verb=verb,recipient=user,url = url)
-            subject.upload_permission.remove(user)
-        else:
-            verb = f"You got permission to  upload notes in {subject.subject_name} of {classroom.class_name}"
-            subject.upload_permission.add(user)
-            notify.send(sender=request.user,verb=verb,recipient=user,url = url)
-        return redirect(reverse('subject_details',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
+    user = User.objects.get(username=username)
+    subject = get_object_or_404(Subject,id=subject_id)
+    check = subject.upload_permission.filter(username = user.username).exists()
+    url = reverse('subjects',kwargs={'unique_id':classroom.unique_id})
+    if check:
+        verb = f"You can't upload notes in {subject.subject_name} of {classroom.class_name} anymore"
+        notify.send(sender=request.user,verb=verb,recipient=user,url = url)
+        subject.upload_permission.remove(user)
+    else:
+        verb = f"You got permission to  upload notes in {subject.subject_name} of {classroom.class_name}"
+        subject.upload_permission.add(user)
+        notify.send(sender=request.user,verb=verb,recipient=user,url = url)
+    return redirect(reverse('subject_details',kwargs={'unique_id':classroom.unique_id,'subject_id':subject.id}))
 
 @login_required#checked
 def unsend_request(request,unique_id):
@@ -693,14 +695,21 @@ def export_marks(request,unique_id,subject_id,id):
         raise Http404()
 
 def features(request):
+    #cacheable
     return render(request, 'features.html')
 
 def privacy(request):
+    #cacheable
     return render(request, 'privacy.html')
 
 @login_required
 def bug_report(request):
-    reporters = User.objects.filter(id__in=Bug_report.objects.values_list('user__id',flat=True)).annotate(itemcount=Count('bug_report')).order_by('-itemcount')[:20]
+    #cacheable
+    reporters = cache.get('reporters')
+    if not reporters:
+        reporters = User.objects.filter(id__in=Bug_report.objects.values_list('user__id',flat=True)).annotate(itemcount=Count('bug_report')).order_by('-itemcount')[:20]
+        cache.set('reporters', reporters, 15*60)
+        
     if request.method=="POST":
         form = BugReportForm(request.POST, request.FILES)
         if form.is_valid():
@@ -715,3 +724,5 @@ def bug_report(request):
         'reporters':reporters
     }
     return render(request,'bug_report.html',params)
+
+# logging, celery, redis caching, decorators, apiviews, jwt, 
