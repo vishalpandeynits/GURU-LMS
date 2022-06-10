@@ -37,5 +37,5 @@ def note_signal(sender, instance, created, **kwargs):
 		activity.save()
 		notify.send(sender=instance.uploaded_by,recipient=students,verb=activity.action,url= activity.url)
 		from apps.email import note_email
-		note_email.delay(instance.id)
+		note_email(instance.id)
 		print(1)

@@ -4,13 +4,11 @@ django-contrib-comments==1.9.2
 django-rest-framework
 django-crispy-forms==1.9.2
 humanize==2.6.0
-Pillow==8.1.2
 six==1.15.0
 Jinja2==2.11.1
 python-decouple==3.3
 gunicorn==20.0.4
 whitenoise==5.1.0
-psycopg2==2.8.5
 boto3==1.16.63
 django-storages==1.11.1
 django-filter==2.4.0

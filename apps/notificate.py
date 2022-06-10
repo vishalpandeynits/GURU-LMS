@@ -21,7 +21,7 @@ def announcement_signal(sender, instance, created, **kwargs):
 		activity.save()
 		recepients = instance.subject_name.classroom.members.all().exclude(username=instance.announced_by.username)
 		notify.send(sender=instance.announced_by,recipient=recepients,verb=activity.action,url= activity.url)
-		announcement_email.delay(instance)
+		announcement_email(instance)
 
 @receiver(post_save, sender=Assignment)
 def assignment_signal(sender, instance, created, **kwargs):
@@ -36,4 +36,4 @@ def assignment_signal(sender, instance, created, **kwargs):
 		activity.save()
 		students = instance.subject_name.classroom.members.all().difference(instance.subject_name.classroom.teacher.all()).difference(instance.subject_name.classroom.special_permissions.all())
 		notify.send(sender=instance.assigned_by,recipient=students,verb=activity.action,url= activity.url)
-		assignment_email.delay(instance)
+		assignment_email(instance)

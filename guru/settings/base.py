@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from decouple import config
+from .local import *
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 SECRET_KEY = config('SECRET')
@@ -30,7 +31,6 @@ THIRD_PARTY_APPS = [
     'storages',
     'imagekit',
     'notifications',
-    
     'django_quill',
 ]
 
@@ -49,7 +49,6 @@ INSTALLED_APPS = INBUILT_APPS + THIRD_PARTY_APPS + GURU_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,11 +74,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 "apps.context_preprocess.data",
             ],
-            # 'loaders': [
-            # ('django.template.loaders.cached.Loader', [
-            #     'django.template.loaders.filesystem.Loader',
-            #     'django.template.loaders.app_directories.Loader',
-            # ])],
         },
     },
 ]
@@ -106,6 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -180,38 +175,6 @@ SOCIALACCOUNT_QUERY_EMAIL=ACCOUNT_EMAIL_REQUIRED
 SOCIALACCOUNT_EMAIL_REQUIRED=ACCOUNT_EMAIL_REQUIRED
 SOCIALACCOUNT_STORE_TOKENS=False
 
-#REST FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
-
-if DEBUG:
-    from .local import *
-else:
-    from .prod import *
-
-    MIDDLEWARE += [
-    'htmlmin.middleware.HtmlMinifyMiddleware',
-    'htmlmin.middleware.MarkRequestMiddleware',
-    'honeypot.middleware.HoneypotResponseMiddleware',
-    'honeypot.middleware.HoneypotViewMiddleware',
-    ]
-
-    INSTALLED_APPS += [
-        'honeypot',
-    ]
-
-    HONEYPOT_FIELD_NAME = config('honeypot_field')
-    HONEYPOT_VALUE = config('honeypot_value')
